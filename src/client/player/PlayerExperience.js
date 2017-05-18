@@ -111,8 +111,9 @@ export default class PlayerExperience extends soundworks.Experience {
       const x0 = boundingRect.width;
       const y0 = boundingRect.height;
       const radius = Math.sqrt(Math.pow((x - x0), 2) + Math.pow((y - y0), 2));
-      const r1 = 190;
-      const r2 = 310;
+      const canvasMax = Math.max(boundingRect.width * 2, boundingRect.height * 2);
+      const r1 = canvasMax / 6;
+      const r2 = canvasMax / 4;
       const angle = Math.floor(this.mathDegrees(Math.atan2(yFromCenter,xFromCenter)));
       if (r1 < radius) {
         if (radius < r2) {
