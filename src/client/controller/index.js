@@ -16,12 +16,58 @@ window.addEventListener('load', () => {
       instance.view = serviceViews.get(id, config);
   });
 
-  const experience = new soundworks.ControllerExperience();
+  const controller = new soundworks.ControllerExperience();
 
-  experience.setGuiOptions('gain', {
+  controller.setGuiOptions('outputGain0', {
     type: 'slider',
     size: 'large',
   });
+
+  controller.setGuiOptions('outputGain1', {
+    type: 'slider',
+    size: 'large',
+  });
+
+  controller.setGuiOptions('outputGain2', {
+    type: 'slider',
+    size: 'large',
+  });
+
+  controller.setGuiOptions('outputGain3', {
+    type: 'slider',
+    size: 'large',
+  });
+
+  controller.setGuiOptions('outputGain4', {
+    type: 'slider',
+    size: 'large',
+  });
+
+  controller.setGuiOptions('outputGain5', {
+    type: 'slider',
+    size: 'large',
+  });
+  
+  controller.setGuiOptions('outputGain6', {
+    type: 'slider',
+    size: 'large',
+  });
+
+  controller.setGuiOptions('outputGain7', {
+    type: 'slider',
+    size: 'large',
+  });
+
+  controller.setGuiOptions('wooferGain', {
+    type: 'slider',
+    size: 'large',
+  });
+
+  controller.setGuiOptions('wooferCutoff', {
+    type: 'slider',
+    size: 'large',
+  });
+
 
   soundworks.client.start();
 });

@@ -33,6 +33,17 @@ server.setClientConfigDefinition((clientType, config, httpRequest) => {
 
 const sharedParams = server.require('shared-params');
 sharedParams.addText('numPlayers', 'num players', 0, ['controller']);
+sharedParams.addNumber('outputGain0', 'output 0 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('outputGain1', 'output 1 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('outputGain2', 'output 2 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('outputGain3', 'output 3 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('outputGain4', 'output 4 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('outputGain5', 'output 5 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('outputGain6', 'output 6 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('outputGain7', 'output 7 gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('wooferGain', 'woofer gain', -40, 20, 1, 0, ['controller', 'barrel']);
+sharedParams.addNumber('wooferCutoff', 'woofer cutoff', 50, 500, 5, 250, ['controller', 'barrel']);
+sharedParams.addNumber('tempo', 'tempo', 60, 240, 5, 120, ['controller']);
 sharedParams.addTrigger('clear', 'clear');
 
 const controllerExperience = new ControllerExperience('controller');
