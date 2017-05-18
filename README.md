@@ -2,7 +2,7 @@
 
 CoLoop prototype of a collaborative TR-909 drum machine.
 
-This application is designed for the CoLoop hardware prototype by NoDesign and IRCAM.
+This application is designed for the _CoLoop_ object prototype by NoDesign and IRCAM.
 
 Use the follwing commands to clone the repository and run the server:
 ```sh
@@ -13,6 +13,6 @@ $ npm run watch
 ```
 
 The application provides the following web clients:
-- _[server address]/_ ... for the player's mobile devices
-- _[server address]/barrel_ ... for the CoLoop device
-- _[server address]/controller_ ... for controlling the application
+- ___[server address]/___ ... for the player's mobile devices
+- ___[server address]/barrel___ ... for the _CoLoop_ device
+- ___[server address]/controller___ ... for controlling the application
