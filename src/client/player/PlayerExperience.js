@@ -55,7 +55,7 @@ export default class PlayerExperience extends soundworks.Experience {
     this.show().then(() => {
       //this.initMotion();
       this.initSurface();
-      this.initAudioOutput();
+      this.initAudio();
 
       this.renderer = new PlayerRenderer(this.sequence);
 
@@ -104,7 +104,7 @@ export default class PlayerExperience extends soundworks.Experience {
     });
   }
 
-  initAudioOutput() {
+  initAudio() {
     this.master = audioContext.createGain();
     this.master.connect(audioContext.destination);
     this.master.gain.value = 1;
