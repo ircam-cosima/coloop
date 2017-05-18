@@ -7,11 +7,11 @@ const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
 const template = `
-  <canvas class="background"></canvas>
+  <canvas class="background flex-middle"></canvas>
   <div class="foreground">
     <div class="section-top flex-middle"></div>
-    <div class="section-center flex-center">
-      <p class="big"><%= title %></p>
+    <div class="section-center flex-middle">
+    <p class="instrument-name"><%= instrumentName %></p>
     </div>
     <div class="section-bottom flex-middle"></div>
   </div>
@@ -47,9 +47,13 @@ export default class PlayerExperience extends soundworks.Experience {
     this.instrument = this.audioBufferManager.data[soundworks.client.index];
     const instrumentName = this.instrument.name;
 
-    this.view = new soundworks.CanvasView(template, { title: instrumentName.toUpperCase() }, {}, {
+    this.view = new soundworks.CanvasView(template, { instrumentName: instrumentName.toUpperCase() }, {}, {
       id: this.id,
-      preservePixelRatio: true,
+      ratios: {
+        '.section-top': 0,
+        '.section-center': 1,
+        '.section-bottom': 0,
+      },
     });
 
     this.show().then(() => {
@@ -95,13 +99,34 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   initSurface() {
+
     const surface = new soundworks.TouchSurface(this.view.$el);
 
     surface.addListener('touchstart', (id, normX, normY) => {
-      const beat = Math.floor(normY * this.sequence.length);
-      const state = this.incrNoteState(beat);
-      this.send('switchNote', beat, state);
+      const boundingRect = this.view.$el.getBoundingClientRect();
+      const x = 2 * normX * boundingRect.width;
+      const y = 2 * normY * boundingRect.height;
+      const xFromCenter = x - boundingRect.width;
+      const yFromCenter = - (y - boundingRect.height);
+      const x0 = boundingRect.width;
+      const y0 = boundingRect.height;
+      const radius = Math.sqrt(Math.pow((x - x0), 2) + Math.pow((y - y0), 2));
+      const r1 = 190;
+      const r2 = 310;
+      const angle = Math.floor(this.mathDegrees(Math.atan2(yFromCenter,xFromCenter)));
+      if (r1 < radius) {
+        if (radius < r2) {
+          const beat = Math.floor((16 * (450 - angle) / 360) + 0.5) % 16;
+          const state = this.incrNoteState(beat);
+          this.send('switchNote', beat, state);
+        }
+      }
     });
+  }
+
+
+  mathDegrees(radians) {
+  return radians * 180 / Math.PI;
   }
 
   initAudioOutput() {

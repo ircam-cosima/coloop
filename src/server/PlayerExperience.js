@@ -20,7 +20,7 @@ export default class PlayerExperience extends Experience {
 
   start() {
     this.sharedParams.addParamListener('clear', () => {
-      this.broadcast(null, null, 'clearAllNotes');      
+      this.broadcast(null, null, 'clearAllNotes');
     });
   }
 

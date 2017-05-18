@@ -10,6 +10,25 @@ export default class PlayerRenderer extends Canvas2dRenderer {
 
   init() {
 
+    const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
+    const r = canvasMax / 5;
+
+    this.positionXArr = new Array();
+    this.positionYArr = new Array();
+
+    function initPositionX(i) {
+      let x = (r * Math.cos(Math.PI / 2 - (i * (Math.PI / 8))));
+      return x;
+    }
+    function initPositionY(i) {
+      let y = (r * Math.sin(Math.PI / 2 - (i * (Math.PI / 8))));
+      return y;
+    }
+
+    for(let i = 0; i < this.states.length; i++) {
+      this.positionXArr.push(initPositionX(i));
+      this.positionYArr.push(initPositionY(i));
+    }
   }
 
   update(dt) {
@@ -19,21 +38,30 @@ export default class PlayerRenderer extends Canvas2dRenderer {
   render(ctx) {
     ctx.save();
 
+    const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
+    const r = canvasMax / 5;
+    const stepRadius = r / 6;
     const states = this.states;
     const numStates = states.length;
-    const yMargin = 6;
-    const stepHeight = this.canvasHeight / numStates;
-    const rectHeight = stepHeight - 2 * yMargin;
-    const xMargin = (this.canvasWidth - rectHeight) / 2;
-    const rectWidth = this.canvasWidth - 2 * xMargin;
-    const x = xMargin;
-    let y = yMargin;
+    const yMargin = this.canvasHeight / 2;
+    const xMargin = this.canvasWidth / 2;
+
 
     for (let i = 0; i < numStates; i++) {
       let state = states[i];
 
-      if (i === this.highlight)
-        state = 3;
+      if (i === this.highlight && state == 0) {
+       state = 3;
+      }
+
+      if (i === this.highlight && state == 1) {
+       state = 4;
+      }
+
+      if (i === this.highlight && state == 2) {
+       state = 4;
+      }
+
 
       ctx.beginPath();
       ctx.globalAlpha = 1;
@@ -45,30 +73,35 @@ export default class PlayerRenderer extends Canvas2dRenderer {
           break;
 
         case 1:
-          ctx.fillStyle = '#3f3f3f';
+          ctx.fillStyle = '#A7BEFF';
           ctx.strokeStyle = "#ffffff";
           break;
 
         case 2:
-          ctx.fillStyle = '#7f7f7f';
+          ctx.fillStyle = '#00217E';
           ctx.strokeStyle = "#ffffff";
           break;
 
         case 3:
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = '#606060';
           ctx.strokeStyle = "#ffffff";
           break;
+
+        case 4:
+          ctx.fillStyle = '#FFFFFF';
+          ctx.strokeStyle = "#ffffff";
+          break;
+
       }
 
-      ctx.rect(x, y, rectWidth, rectHeight);
+      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], stepRadius, stepRadius, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
       ctx.closePath();
-      
-      y += stepHeight;
     }
 
     ctx.restore();
+
   }
 
   setHighlight(index) {
