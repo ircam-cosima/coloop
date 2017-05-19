@@ -4,6 +4,10 @@ const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
+function radToDegrees(radians) {
+  return radians * 180 / Math.PI;
+}
+
 class Renderer extends Canvas2dRenderer {
   constructor(states) {
     super(0);
@@ -14,6 +18,26 @@ class Renderer extends Canvas2dRenderer {
 
   init() {
 
+    const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
+    const r = canvasMax / 5;
+
+    this.positionXArr = [];
+    this.positionYArr = [];
+
+    function initPositionX(i) {
+      let x = (r * Math.cos(Math.PI / 2 - (i * (Math.PI / 8))));
+      return x;
+    }
+
+    function initPositionY(i) {
+      let y = (r * Math.sin(Math.PI / 2 - (i * (Math.PI / 8))));
+      return y;
+    }
+
+    for (let i = 0; i < this.states.length; i++) {
+      this.positionXArr.push(initPositionX(i));
+      this.positionYArr.push(initPositionY(i));
+    }
   }
 
   update(dt) {
@@ -23,56 +47,61 @@ class Renderer extends Canvas2dRenderer {
   render(ctx) {
     ctx.save();
 
+    const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
+    const r = canvasMax / 5;
+    const stepRadius = r / 6;
     const states = this.states;
     const numStates = states.length;
-    const yMargin = 6;
-    const stepHeight = this.canvasHeight / numStates;
-    const rectHeight = stepHeight - 2 * yMargin;
-    const xMargin = (this.canvasWidth - rectHeight) / 2;
-    const rectWidth = this.canvasWidth - 2 * xMargin;
-    const x = xMargin;
-    let y = yMargin;
+    const yMargin = this.canvasHeight / 2;
+    const xMargin = this.canvasWidth / 2;
+
 
     for (let i = 0; i < numStates; i++) {
       let state = states[i];
-
-      if (i === this.highlight)
-        state = 3;
 
       ctx.beginPath();
       ctx.globalAlpha = 1;
 
       switch (state) {
         case 0:
-          ctx.fillStyle = '#000000';
-          ctx.strokeStyle = "#ffffff";
+          if (i === this.highlight) {
+            ctx.fillStyle = '#606060';
+            ctx.strokeStyle = "#ffffff";
+          } else {
+            ctx.fillStyle = '#000000';
+            ctx.strokeStyle = "#ffffff";
+          }
           break;
 
         case 1:
-          ctx.fillStyle = '#3f3f3f';
-          ctx.strokeStyle = "#ffffff";
+          if (i === this.highlight) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = "#ffffff";
+          } else {
+            ctx.fillStyle = '#00217E';
+            ctx.strokeStyle = "#ffffff";
+          }
           break;
 
         case 2:
-          ctx.fillStyle = '#7f7f7f';
-          ctx.strokeStyle = "#ffffff";
-          break;
-
-        case 3:
-          ctx.fillStyle = '#ffffff';
-          ctx.strokeStyle = "#ffffff";
+          if (i === this.highlight) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = "#ffffff";
+          } else {
+            ctx.fillStyle = '#A7BEFF';
+            ctx.strokeStyle = "#ffffff";
+          }
           break;
       }
 
-      ctx.rect(x, y, rectWidth, rectHeight);
+      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], stepRadius, stepRadius, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
       ctx.closePath();
-
-      y += stepHeight;
     }
 
     ctx.restore();
+
   }
 
   setHighlight(index) {
@@ -81,11 +110,11 @@ class Renderer extends Canvas2dRenderer {
 }
 
 const template = `
-  <canvas class="background"></canvas>
+  <canvas class="background flex-middle"></canvas>
   <div class="foreground">
     <div class="section-top flex-middle"></div>
-    <div class="section-center flex-center">
-      <p class="big"><%= title %></p>
+    <div class="section-center flex-middle">
+    <p class="instrument-name"><%= instrumentName %></p>
     </div>
     <div class="section-bottom flex-middle"></div>
   </div>
@@ -112,18 +141,20 @@ export default class Co909 {
   enter() {
     const experience = this.experience;
 
-    experience.view.model = { title: this.instrument.name.toUpperCase() };
+    this.$el = experience.view.$el;
+
+    experience.view.model = { instrumentName: this.instrument.name.toUpperCase() };
     experience.view.template = template;
     experience.view.render();
-    experience.view.addRenderer(this.renderer);      
+    experience.view.addRenderer(this.renderer);
     experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
-        ctx.save();
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#000000';
-        ctx.rect(0, 0, canvasWidth, canvasHeight);
-        ctx.fill();
-        ctx.restore();
-      });
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#000000';
+      ctx.rect(0, 0, canvasWidth, canvasHeight);
+      ctx.fill();
+      ctx.restore();
+    });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
     experience.metricScheduler.addMetronome(this.onMetroBeat, 16, 16);
@@ -144,10 +175,28 @@ export default class Co909 {
   }
 
   onTouchStart(id, normX, normY) {
-    const beat = Math.floor(normY * this.sequence.length);
-    let state = (this.sequence[beat] + 1) % 3;
-    this.sequence[beat] = state;
-    this.experience.send('switchNote', client.index, beat, state);
+    const experience = this.experience;
+    const boundingRect = this.$el.getBoundingClientRect();
+    const x = 2 * normX * boundingRect.width;
+    const y = 2 * normY * boundingRect.height;
+    const xFromCenter = x - boundingRect.width;
+    const yFromCenter = -(y - boundingRect.height);
+    const x0 = boundingRect.width;
+    const y0 = boundingRect.height;
+    const radius = Math.sqrt(Math.pow((x - x0), 2) + Math.pow((y - y0), 2));
+    const canvasMax = Math.max(boundingRect.width * 2, boundingRect.height * 2);
+    const r1 = canvasMax / 6;
+    const r2 = canvasMax / 4;
+    const angle = Math.floor(radToDegrees(Math.atan2(yFromCenter, xFromCenter)));
+
+    if (r1 < radius) {
+      if (radius < r2) {
+        const beat = Math.floor((16 * (450 - angle) / 360) + 0.5) % 16;
+        let state = (this.sequence[beat] + 1) % 3;
+        this.sequence[beat] = state;
+        experience.send('switchNote', soundworks.client.index, beat, state);    
+      }
+    }
   }
 
   onMetroBeat(measureCount, beatCount) {

@@ -15,7 +15,7 @@ export default class PlayerExperience extends Experience {
     this.sharedParams = this.require('shared-params');
     this.checkin = this.require('checkin');
     this.audioBufferManager = this.require('audio-buffer-manager');
-    this.metricScheduler = this.require('metric-scheduler', { tempo: 120, tempoUnit: 1 / 4 });
+    this.metricScheduler = this.require('metric-scheduler', { tempo: 120, tempoUnit: 1/4 });
     this.sync = this.require('sync');
 
     this.scheduler = null;
@@ -29,8 +29,9 @@ export default class PlayerExperience extends Experience {
 
     this.initScenes();
 
-    // hack forgotten intitialization of the metric scheduler (sorry, fixed for next release)
+    // hack forgotten intitialization of the metric scheduler (sorry, fixed for next soundworks release)
     this.metricScheduler._metricSpeed = 0.5; // tempo: 120, tempoUnit: 1/4
+    this.sharedParams.addParamListener('tempo', this.onTempoChange);
 
     const scene = this.scenes['co-909'];
     this.currentScene = scene;
@@ -69,6 +70,6 @@ export default class PlayerExperience extends Experience {
     const syncTime = this.metricScheduler.syncTime;
     const metricPosition = this.metricScheduler.getMetricPositionAtSyncTime(syncTime);
 
-    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1 / 4, 'tempoChange');
+    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1/4, 'tempoChange');
   }
 }

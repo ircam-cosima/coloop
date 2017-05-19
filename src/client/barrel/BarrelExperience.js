@@ -92,11 +92,10 @@ export default class BarrelExperience extends soundworks.Experience {
     this.wooferBuss = bassWoofer;
     this.setWooferGain(0); // set default woofer gain to 0 dB
 
-    if (numAudioOutputs >= numOutputChannels) {
-      audioContext.destination.channelCount = numAudioOutputs;
-      channelMerger.connect(audioContext.destination);
-    } else {
-      audioContext.destination.channelCount = numAudioOutputs;
+    audioContext.destination.channelCount = numAudioOutputs;
+    let channelDestination = audioContext.destination;
+
+    if (numAudioOutputs < numOutputChannels) {
       const splitter = audioContext.createChannelSplitter(numOutputChannels);
       const outputMerger = audioContext.createChannelMerger(numAudioOutputs);
 
@@ -106,7 +105,11 @@ export default class BarrelExperience extends soundworks.Experience {
 
       for (let i = 0; i < numOutputChannels; i++)
         splitter.connect(outputMerger, i, i % numAudioOutputs);
+
+      channelDestination = splitter;
     }
+
+    channelMerger.connect(channelDestination);
   }
 
   initParams() {

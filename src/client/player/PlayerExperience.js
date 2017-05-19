@@ -8,10 +8,10 @@ const sceneCtors = {
 };
 
 const template = `
-  <canvas class="background"></canvas>
+  <canvas class="background flex-middle"></canvas>
   <div class="foreground">
     <div class="section-top flex-middle"></div>
-    <div class="section-center flex-center"></div>
+    <div class="section-center flex-middle"></div>
     <div class="section-bottom flex-middle"></div>
   </div>
 `;
@@ -48,7 +48,11 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.view = new soundworks.CanvasView(template, {}, {}, {
       id: this.id,
-      preservePixelRatio: true,
+      ratios: {
+        '.section-top': 0,
+        '.section-center': 1,
+        '.section-bottom': 0,
+      },
     });
 
     this.show().then(() => {
@@ -64,11 +68,14 @@ export default class PlayerExperience extends soundworks.Experience {
   //       const accY = data[1];
   //       const accZ = data[2];
   //       const mag = Math.sqrt(accX * accX + accY * accY + accZ * accZ);
-
   //       /* ??? */
   //     });
   //   }
   // }
+
+  initSurface() {
+    const surface = new soundworks.TouchSurface(this.view.$el);
+  }
 
   initAudio() {
     this.audioOutput = audioContext.createGain();
