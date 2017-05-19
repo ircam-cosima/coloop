@@ -68,6 +68,10 @@ window.addEventListener('load', () => {
     size: 'large',
   });
 
+  controller.setGuiOptions('barrelDelay', {
+    type: 'slider',
+    size: 'large',
+  });
 
   soundworks.client.start();
 });
