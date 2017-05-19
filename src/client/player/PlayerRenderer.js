@@ -29,13 +29,19 @@ export default class PlayerRenderer extends Canvas2dRenderer {
       this.positionXArr.push(initPositionX(i));
       this.positionYArr.push(initPositionY(i));
     }
-    
+
+// Defining constants that will be used for defining graphics
     this.buttonW = this.canvasWidth/14.0;
     this.buttonH = this.canvasHeight/2.84;
+// this is atomic unit that will be used to compose graphics
     this.segmentW = this.canvasWidth/24.0;
     this.segmentH = this.canvasHeight/24.0;
 
     /// INIT POINTS FOR DRAWING CIRCLE
+    // all the points inside circle dataviz.
+    // Points are organized in 4 concentric circles with 24 leds in each circle
+    // circlePointList[circle][led].x or circlePointList[circle][led].x
+    // Points are precalculated to avoid trigonometry calc in realtime
     this.circlePointList = new Array();
 
     const tSteps = (Math.PI*2.0)/24.0;
@@ -66,16 +72,13 @@ export default class PlayerRenderer extends Canvas2dRenderer {
   render(ctx) {
     ctx.save();
 
-//    const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
-
-//    const r = canvasMax / 5;
-//    const stepRadius = r / 6;
     const states = this.states;
     const numStates = states.length;
 
+    // this is current playing selector
     var selector = -1;
-//    const yMargin = this.canvasHeight / 2;
-//    const xMargin = this.canvasWidth / 2;
+
+    //iterate and draw all buttons
     for (let i = 0; i < numStates; i++) {
         let state = states[i];
 
@@ -92,8 +95,6 @@ export default class PlayerRenderer extends Canvas2dRenderer {
             
         }
 
-
-        //      ctx.beginPath();
         ctx.globalAlpha = 1;
 
         switch (state) {
@@ -126,16 +127,17 @@ export default class PlayerRenderer extends Canvas2dRenderer {
 
         }
 
+        // calculate button position
         var x = (i<8) ? this.segmentW+1.26*this.buttonW*i : this.segmentW+1.26*this.buttonW*(i-8);
         var y = (i<8) ? (this.segmentH*3) : (this.segmentH*3)+1.1*this.buttonH;
 
         this.roundRect(x,y, this.buttonW, this.buttonH, 7, ctx);
-        //ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], stepRadius, stepRadius, 0, 0, 2 * Math.PI);
+
         ctx.fill();
         ctx.stroke();
     }
 
-    //console.log(selector);
+    /// draw dataViz here
     var selectInCircle = Math.round(this.mapF(selector, 0,15, 0,23));
     for (var i=0; i<this.circlePointList.length; i++) {
         for (var j=0; j<24; j++) {
@@ -148,18 +150,27 @@ export default class PlayerRenderer extends Canvas2dRenderer {
                 ctx.fillStyle = 'grey';
             ctx.lineWidth = 0;
             ctx.strokeStyle = 'black';
+            ctx.stroke();
             ctx.fill();
             ctx.closePath();
         }
     }
+
+
+    /// MUTE BUTTON
+    this.roundRect(this.segmentW*19, this.segmentH*17.5, this.segmentW*4, this.segmentH*3, 7, ctx);
+    ctx.strokeStyle = "#ffffff";
+    ctx.stroke();
     ctx.restore();
 
   }
-  
+
+// simple function to calculate proportion
   mapF(value,istart,istop,ostart,ostop) {
    return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
   }
-  
+
+// round rect routine
   roundRect(x, y, w, h, radius, context){ // radius is corner radius
     var r = x + w;
     var b = y + h;
