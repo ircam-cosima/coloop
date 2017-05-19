@@ -1,7 +1,6 @@
 import { Experience } from 'soundworks/server';
-import sceneConfig from '../shared/scene-config';
+import sceneConfig from '../shared/scenes-config';
 import Scheduler from './Scheduler';
-import Metronome from './Metronome';
 import SceneCo909 from './scenes/co-909';
 
 const sceneCtors = {

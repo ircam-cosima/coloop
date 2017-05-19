@@ -23,7 +23,7 @@ export default class BarrelExperience extends soundworks.Experience {
   constructor(assetsDomain) {
     super();
 
-    this.platform = this.require('platform', { features: ['web-audio'], showDisplay: false });
+    this.platform = this.require('platform', { features: ['web-audio'], showDialog: false });
 
     this.sharedParams = this.require('shared-params');
 

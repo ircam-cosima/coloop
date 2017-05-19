@@ -1,5 +1,6 @@
-// export default 
-class SceneCo909 {
+import Metronome from '../Metronome';
+
+export default class SceneCo909 {
   constructor(experience, config) {
     this.experience = experience;
     this.config = config;

@@ -1,5 +1,5 @@
 import * as soundworks from 'soundworks/client';
-import sceneConfig from '../../shared/scene-config';
+import sceneConfig from '../../shared/scenes-config';
 import SceneCo909 from './scenes/co-909';
 const audioContext = soundworks.audioContext;
 
