@@ -1,13 +1,11 @@
-# CO-909
+# CoLoop
 
-Collaborative TR-909 drum machine.
-
-This application is designed for the _CoLoop_ object prototype by NoDesign and IRCAM.
+_CoLoop_ is a participative/collaborative ghetto blaster designed by NoDesign and IRCAM in the framework of the CoSiMa project.
 
 Use the follwing commands to clone the repository and run the server:
 ```sh
-$ git clone https://github.com/ircam-cosima/coloop-909.git
-$ cd coloop-909
+$ git clone https://github.com/ircam-cosima/coloop.git
+$ cd coloop
 $ npm install
 $ npm run watch
 ```
