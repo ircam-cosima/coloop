@@ -31,10 +31,7 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.sharedParams = this.require('shared-params');
     this.checkin = this.require('checkin');
-    this.audioBufferManager = this.require('audio-buffer-manager', {
-      assetsDomain: assetsDomain,
-      files: sceneConfig,
-    });
+    this.audioBufferManager = this.require('audio-buffer-manager', { assetsDomain: assetsDomain });
 
     this.metricScheduler = this.require('metric-scheduler');
     this.surface = null;
@@ -84,8 +81,6 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   initScenes() {
-    const sceneConfig = this.audioBufferManager.data;
-
     for (let scene in sceneCtors) {
       const ctor = sceneCtors[scene];
       const config = sceneConfig[scene];

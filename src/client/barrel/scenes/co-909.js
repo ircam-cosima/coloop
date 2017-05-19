@@ -7,15 +7,15 @@ export default class SceneCo909 {
     this.experience = experience;
     this.config = config;
 
-    this.outputBusses = experience.outputBusses;
+    this.instruments = null;
 
-    this.instruments = this.config.instruments;
     this.instrumentSequences = new Array(config.instruments.length);
-
     for (let i = 0; i < this.instrumentSequences.length; i++) {
       this.instrumentSequences[i] = new Array(config.numSteps);
       this.resetInstrumentSequence(i);
     }
+
+    this.outputBusses = experience.outputBusses;
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onSwitchNote = this.onSwitchNote.bind(this);
@@ -23,12 +23,27 @@ export default class SceneCo909 {
     this.onClear = this.onClear.bind(this);
   }
 
-  enter() {
+  enterScene() {
     const experience = this.experience;
     experience.metricScheduler.addMetronome(this.onMetroBeat, 16, 16);
     experience.receive('switchNote', this.onSwitchNote);
     experience.receive('disconnectClient', this.onDisconnectClient);
-    experience.sharedParams.addParamListener('clear', this.onClear);
+    experience.sharedParams.addParamListener('clear', this.onClear);    
+  }
+
+  enter() {
+    const experience = this.experience;
+
+    if(this.instruments) {
+      this.enterScene();
+    } else {
+      const instrumentsConfig = this.config.instruments;
+      experience.audioBufferManager.loadFiles(instrumentsConfig).then((instruments) => {
+        this.instruments = instruments;
+        this.enterScene();        
+      });
+    }
+
   }
 
   exit() {

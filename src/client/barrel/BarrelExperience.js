@@ -11,7 +11,7 @@ const sceneCtors = {
 const template = `
   <canvas class="background"></canvas>
   <div class="foreground">
-    <div class="flex-center">
+    <div class="flex-middle">
       <p class="big">Barrel</p>
     </div>
   </div>
@@ -24,14 +24,8 @@ export default class BarrelExperience extends soundworks.Experience {
     super();
 
     this.platform = this.require('platform', { features: ['web-audio'], showDialog: false });
-
     this.sharedParams = this.require('shared-params');
-
-    this.audioBufferManager = this.require('audio-buffer-manager', {
-      assetsDomain: assetsDomain,
-      files: sceneConfig,
-    });
-
+    this.audioBufferManager = this.require('audio-buffer-manager', { assetsDomain: assetsDomain });
     this.metricScheduler = this.require('metric-scheduler');
 
     this.scenes = {};
@@ -127,8 +121,6 @@ export default class BarrelExperience extends soundworks.Experience {
   }
 
   initScenes() {
-    const sceneConfig = this.audioBufferManager.data;
-
     for (let scene in sceneCtors) {
       const ctor = sceneCtors[scene];
       const config = sceneConfig[scene];

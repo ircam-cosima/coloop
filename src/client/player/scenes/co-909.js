@@ -17,7 +17,6 @@ class Renderer extends Canvas2dRenderer {
   }
 
   init() {
-
     const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
     const r = canvasMax / 5;
 
@@ -124,24 +123,26 @@ export default class Co909 {
   constructor(experience, config) {
     this.experience = experience;
     this.config = config;
+    this.loadedConfig = null;
 
-    this.audioOutput = experience.audioOutput;
+    this.instrument = null;
+    this.$viewElem = null;
 
-    this.instrument = config.instruments[soundworks.client.index];
     this.sequence = new Array(config.numSteps);
     this.resetSequence();
 
     this.renderer = new Renderer(this.sequence);
+    this.audioOutput = experience.audioOutput;
 
     this.onClear = this.onClear.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
   }
 
-  enter() {
+  enterScene() {
     const experience = this.experience;
 
-    this.$el = experience.view.$el;
+    this.$viewElem = experience.view.$el;
 
     experience.view.model = { instrumentName: this.instrument.name.toUpperCase() };
     experience.view.template = template;
@@ -161,6 +162,20 @@ export default class Co909 {
     experience.sharedParams.addParamListener('clear', this.onClear);
   }
 
+  enter() {
+    const experience = this.experience;
+
+    if(this.instrument) {
+      this.enterScene();
+    } else {
+      const instrumentConfig = this.config.instruments[soundworks.client.index];
+      experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
+        this.instrument = instrument;
+        this.enterScene();        
+      });
+    }
+  }
+
   exit() {
     const experience = this.experience;
     experience.view.removeRenderer(this.renderer);
@@ -176,7 +191,7 @@ export default class Co909 {
 
   onTouchStart(id, normX, normY) {
     const experience = this.experience;
-    const boundingRect = this.$el.getBoundingClientRect();
+    const boundingRect = this.$viewElem.getBoundingClientRect();
     const x = 2 * normX * boundingRect.width;
     const y = 2 * normY * boundingRect.height;
     const xFromCenter = x - boundingRect.width;
@@ -194,7 +209,7 @@ export default class Co909 {
         const beat = Math.floor((16 * (450 - angle) / 360) + 0.5) % 16;
         let state = (this.sequence[beat] + 1) % 3;
         this.sequence[beat] = state;
-        experience.send('switchNote', soundworks.client.index, beat, state);    
+        experience.send('switchNote', soundworks.client.index, beat, state);
       }
     }
   }
