@@ -12,7 +12,7 @@ class Blinker extends TimeEngine {
     this.index = index;
 
     const place = placerConfig[index];
-    this.place = place.color;
+    this.color = place.color;
     this.period = place.period;
     this.state = false;
   }
