@@ -125,6 +125,7 @@ export default class SceneCo909 {
     this.instrument = null;
     this.$viewElem = null;
 
+    this.clientIndex = soundworks.client.index;
     this.numSteps = config.numSteps;
     this.sequence = new Array(this.numSteps);
     this.resetSequence();
@@ -207,7 +208,7 @@ export default class SceneCo909 {
       const beat = Math.floor((this.numSteps * (450 - angle) / 360) + 0.5) % this.numSteps;
       let state = (this.sequence[beat] + 1) % 3;
       this.sequence[beat] = state;
-      experience.send('switchNote', soundworks.client.index, beat, state);
+      experience.send('switchNote', this.clientIndex, beat, state);
     }
   }
 

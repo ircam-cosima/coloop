@@ -200,7 +200,7 @@ export default class SceneCollectiveLoops {
       if (actives.length > maxActives[noteClass]) {
         const offNote = actives.shift();
         this.states[offNote] = 0;
-        experience.send('switchCollectiveLoopsNote', this.clientIndex, offNote, 0);
+        experience.send('switchNote', this.clientIndex, offNote, 0);
       }
     } else {
       const idx = actives.indexOf(note);
@@ -208,7 +208,7 @@ export default class SceneCollectiveLoops {
     }
 
     this.states[note] = state;
-    experience.send('switchCollectiveLoopsNote', this.clientIndex, note, state);
+    experience.send('switchNote', this.clientIndex, note, state);
   }
 
   onMetroBeat(measure, beat) {

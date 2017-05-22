@@ -117,7 +117,6 @@ export default class Placer {
   onTouchStart(id, normX, normY) {
     const callback = this.callback;
     this.stop();
-    console.log("onTouchStart");
     this.experience.send('placerReady');
     callback();
   }

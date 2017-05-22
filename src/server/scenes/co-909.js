@@ -56,7 +56,7 @@ export default class SceneCo909 {
     this.resetInstrumentSequence(client.index);
 
     const experience = this.experience;
-    //experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
+    experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
     experience.sharedParams.removeParamListener('clear', this.onClear);
   }
 
