@@ -40,67 +40,67 @@ export default {
     numSteps: 8,
     notes: [{
       class: 'perc',
-      buffer: 'sounds/collective-loops/Woodblock-01-3-E.mp3'
+      buffer: 'sounds/collective-loops/perc-01.mp3'
     }, {
       class: 'perc',
-      buffer: 'sounds/collective-loops/Woodblock-02-4-D.mp3'
+      buffer: 'sounds/collective-loops/perc-02.mp3'
     }, {
       class: 'perc',
-      buffer: 'sounds/collective-loops/Woodblock-03-5-C.mp3'
+      buffer: 'sounds/collective-loops/perc-03.mp3'
     }, {
       class: 'bass',
-      buffer: 'sounds/collective-loops/MarB-1-As.mp3'
+      buffer: 'sounds/collective-loops/bass-01.mp3'
     }, {
       class: 'bass',
-      buffer: 'sounds/collective-loops/MarB-2-C.mp3'
+      buffer: 'sounds/collective-loops/bass-02.mp3'
     }, {
       class: 'bass',
-      buffer: 'sounds/collective-loops/MarB-2-D.mp3'
+      buffer: 'sounds/collective-loops/bass-03.mp3'
     }, {
       class: 'bass',
-      buffer: 'sounds/collective-loops/MarB-2-E.mp3'
+      buffer: 'sounds/collective-loops/bass-04.mp3'
     }, {
       class: 'bass',
-      buffer: 'sounds/collective-loops/MarB-2-Fs.mp3'
+      buffer: 'sounds/collective-loops/bass-05.mp3'
     }, {
       class: 'bass',
-      buffer: 'sounds/collective-loops/MarB-2-Gs.mp3'
+      buffer: 'sounds/collective-loops/bass-06.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-01-3-Gs.mp3'
+      buffer: 'sounds/collective-loops/marimba-01.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-02-3-As.mp3'
+      buffer: 'sounds/collective-loops/marimba-02.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-03-4-C.mp3'
+      buffer: 'sounds/collective-loops/marimba-03.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-04-4-D.mp3'
+      buffer: 'sounds/collective-loops/marimba-04.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-05-4-E.mp3'
+      buffer: 'sounds/collective-loops/marimba-05.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-06-4-Fs.mp3'
+      buffer: 'sounds/collective-loops/marimba-06.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-07-4-Gs.mp3'
+      buffer: 'sounds/collective-loops/marimba-07.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-08-4-As.mp3'
+      buffer: 'sounds/collective-loops/marimba-08.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-09-5-C.mp3'
+      buffer: 'sounds/collective-loops/marimba-09.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-10-5-D.mp3'
+      buffer: 'sounds/collective-loops/marimba-10.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-11-5-E.mp3'
+      buffer: 'sounds/collective-loops/marimba-11.mp3'
     }, {
       class: 'melody',
-      buffer: 'sounds/collective-loops/MarB-12-5-Fs.mp3'
+      buffer: 'sounds/collective-loops/marimba-12.mp3'
     }, ]
   },
 };
