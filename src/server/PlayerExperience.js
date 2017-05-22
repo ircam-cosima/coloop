@@ -39,19 +39,21 @@ export default class PlayerExperience extends Experience {
 
     this.metricScheduler._metricSpeed = 0.5; // hack forgotten intitialization (tempo: 120, tempoUnit: 1/4) of the metric scheduler (fixed for next soundworks release)
     this.sharedParams.addParamListener('tempo', this.onTempoChange);
+    this.sharedParams.addParamListener('scene', this.onSceneChange);
   }
 
   enter(client) {
     super.enter(client);
+
     this.currentScene.clientEnter(client);
 
     this.broadcast('barrel', null, 'connectClient', client.index);
     this.sharedParams.update('numPlayers', this.clients.length);
-    this.sharedParams.addParamListener('scene', this.onSceneChange);
   }
 
   exit(client) {
     super.exit(client);
+
     this.currentScene.clientExit(client);
 
     this.broadcast('barrel', null, 'disconnectClient', client.index);

@@ -79,7 +79,6 @@ export default class Placer {
   }
 
   onPlacerReady(client) {
-    console.log("onPlacerReady:", client.index);
     const callback = this.callbacks[client.index];
 
     if(callback) {
