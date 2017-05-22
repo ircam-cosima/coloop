@@ -9,7 +9,7 @@ export default class SceneCollectiveLoops {
     this.placer = new Placer(experience);
 
     const numSteps = config.numSteps;
-    const numNotes = config.notes.length;
+    const numNotes = config.playerNotes.length;
 
     this.stepStates = new Array(numSteps);
     this.isPlacing = new Array(numSteps);

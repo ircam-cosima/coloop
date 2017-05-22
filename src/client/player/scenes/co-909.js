@@ -167,7 +167,7 @@ export default class SceneCo909 {
     if(this.instrument) {
       this.enterScene();
     } else {
-      const instrumentConfig = this.config.instruments[soundworks.client.index];
+      const instrumentConfig = this.config.playerInstruments[soundworks.client.index];
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
         this.instrument = instrument;
         this.enterScene();        

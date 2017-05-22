@@ -105,7 +105,7 @@ export default class SceneCollectiveLoops {
     this.$viewElem = null;
 
     const numSteps = config.numSteps;
-    const numStates = config.notes.length;
+    const numStates = config.playerNotes.length;
 
     this.states = new Array(numStates);
     this.resetStates();
@@ -116,7 +116,7 @@ export default class SceneCollectiveLoops {
       'melody': [],
     };
 
-    this.renderer = new Renderer(this.states, config.notes);
+    this.renderer = new Renderer(this.states, config.playerNotes);
     this.audioOutput = experience.audioOutput;
 
     this.onClear = this.onClear.bind(this);
@@ -158,7 +158,7 @@ export default class SceneCollectiveLoops {
     if (this.notes) {
       this.startPlacer();
     } else {
-      const noteConfig = this.config.notes;
+      const noteConfig = this.config.playerNotes;
       experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
         this.notes = notes;
         this.startPlacer();
@@ -212,6 +212,7 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
+    const time = audioScheduler.currentTime;
     const states = this.states;
     const notes = this.notes;
 
@@ -220,9 +221,12 @@ export default class SceneCollectiveLoops {
       const note = notes[i];
 
       if (state > 0) {
-        const time = audioScheduler.currentTime;
+        const gain = audioContext.createGain();
+        gain.connect(this.audioOutput);
+        gain.gain.value = note.gain;
+
         const src = audioContext.createBufferSource();
-        src.connect(this.audioOutput);
+        src.connect(gain);
         src.buffer = note.buffer;
         src.start(time);
       }

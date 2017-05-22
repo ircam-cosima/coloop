@@ -9,7 +9,7 @@ export default class SceneCo909 {
     this.instruments = null;
 
     const numSteps = config.numSteps;
-    const numInstruments = config.instruments.length;
+    const numInstruments = config.barrelInstruments.length;
 
     this.instrumentSequences = new Array(numInstruments);
 
@@ -41,7 +41,7 @@ export default class SceneCo909 {
     if(this.instruments) {
       this.enterScene();
     } else {
-      const instrumentConfig = this.config.instruments;
+      const instrumentConfig = this.config.barrelInstruments;
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instruments) => {
         this.instruments = instruments;
         this.enterScene();        

@@ -6,7 +6,7 @@ export default class SceneCo909 {
     this.config = config;
 
     const numSteps = config.numSteps;
-    const numInstruments = config.instruments.length;
+    const numInstruments = config.playerInstruments.length;
 
     this.instrumentSequences = new Array(numInstruments);
 

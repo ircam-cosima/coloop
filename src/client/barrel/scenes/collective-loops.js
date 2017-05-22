@@ -9,7 +9,7 @@ export default class SceneCollectiveLoops {
     this.notes = null;
 
     const numSteps = config.numSteps;
-    const numNotes = config.notes.length;
+    const numNotes = config.barrelNotes.length;
 
     this.stepStates = new Array(numSteps);
 
@@ -41,7 +41,7 @@ export default class SceneCollectiveLoops {
     if(this.notes) {
       this.enterScene();
     } else {
-      const noteConfig = this.config.notes;
+      const noteConfig = this.config.barrelNotes;
       experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
         this.notes = notes;
         this.enterScene();        
@@ -76,8 +76,12 @@ export default class SceneCollectiveLoops {
       const state = states[i];
 
       if (state > 0) {
+        const gain = audioContext.createGain();
+        gain.connect(output);
+        gain.gain.value = note.gain;
+
         const src = audioContext.createBufferSource();
-        src.connect(output);
+        src.connect(gain);
         src.buffer = note.buffer;
         src.start(time);
       }
