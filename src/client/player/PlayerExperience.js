@@ -1,10 +1,14 @@
 import * as soundworks from 'soundworks/client';
 import sceneConfig from '../../shared/scenes-config';
+import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
+import SceneCollectiveLoops from './scenes/collective-loops';
 const audioContext = soundworks.audioContext;
 
 const sceneCtors = {
+  'off': SceneOff,
   'co-909': SceneCo909,
+  'collective-loops': SceneCollectiveLoops,
 };
 
 const template = `
@@ -28,20 +32,21 @@ export default class PlayerExperience extends soundworks.Experience {
     // });
 
     this.scenes = {};
+    this.currentScene = null;
 
     this.sharedParams = this.require('shared-params');
     this.checkin = this.require('checkin');
     this.audioBufferManager = this.require('audio-buffer-manager', { assetsDomain: assetsDomain });
 
+    this.syncScheduler = this.require('sync-scheduler');
     this.metricScheduler = this.require('metric-scheduler');
     this.surface = null;
+
+    this.onSceneChange = this.onSceneChange.bind(this);
   }
 
   start() {
     super.start();
-
-    this.initAudio();
-    this.initScenes();
 
     this.view = new soundworks.CanvasView(template, {}, {}, {
       id: this.id,
@@ -54,7 +59,12 @@ export default class PlayerExperience extends soundworks.Experience {
 
     this.show().then(() => {
       this.surface = new soundworks.TouchSurface(this.view.$el);
-      this.scenes['co-909'].enter();
+
+      this.initAudio();
+      this.initScenes();
+      this.currentScene.enter();
+
+      this.sharedParams.addParamListener('scene', this.onSceneChange);
     });
   }
 
@@ -90,5 +100,13 @@ export default class PlayerExperience extends soundworks.Experience {
       else
         throw new Error(`Cannot find config for scene '${scene}'`);
     }
+
+    this.currentScene = this.scenes.off;
+  }
+
+  onSceneChange(value) {
+    this.currentScene.exit();
+    this.currentScene = this.scenes[value];
+    this.currentScene.enter();
   }
 }

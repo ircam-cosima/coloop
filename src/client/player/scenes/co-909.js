@@ -1,5 +1,4 @@
 import * as soundworks from 'soundworks/client';
-import { Canvas2dRenderer } from 'soundworks/client';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
@@ -8,7 +7,7 @@ function radToDegrees(radians) {
   return radians * 180 / Math.PI;
 }
 
-class Renderer extends Canvas2dRenderer {
+class Renderer extends soundworks.Canvas2dRenderer {
   constructor(states) {
     super(0);
 
@@ -50,13 +49,12 @@ class Renderer extends Canvas2dRenderer {
     const r = canvasMax / 5;
     const stepRadius = r / 6;
     const states = this.states;
-    const numStates = states.length;
+    const numSteps = states.length;
     const yMargin = this.canvasHeight / 2;
     const xMargin = this.canvasWidth / 2;
 
-
-    for (let i = 0; i < numStates; i++) {
-      let state = states[i];
+    for (let i = 0; i < numSteps; i++) {
+      const state = states[i];
 
       ctx.beginPath();
       ctx.globalAlpha = 1;
@@ -119,16 +117,16 @@ const template = `
   </div>
 `;
 
-export default class Co909 {
+export default class SceneCo909 {
   constructor(experience, config) {
     this.experience = experience;
     this.config = config;
-    this.loadedConfig = null;
 
     this.instrument = null;
     this.$viewElem = null;
 
-    this.sequence = new Array(config.numSteps);
+    this.numSteps = config.numSteps;
+    this.sequence = new Array(this.numSteps);
     this.resetSequence();
 
     this.renderer = new Renderer(this.sequence);
@@ -158,7 +156,7 @@ export default class Co909 {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.addMetronome(this.onMetroBeat, 16, 16);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, this.numSteps, this.numSteps);
     experience.sharedParams.addParamListener('clear', this.onClear);
   }
 
@@ -182,6 +180,7 @@ export default class Co909 {
     experience.surface.removeListener('touchstart', this.onTouchStart);
     experience.metricScheduler.removeMetronome(this.onMetroBeat);
     experience.sharedParams.removeParamListener('clear', this.onClear);
+    this.resetSequence();
   }
 
   resetSequence() {
@@ -204,20 +203,16 @@ export default class Co909 {
     const r2 = canvasMax / 4;
     const angle = Math.floor(radToDegrees(Math.atan2(yFromCenter, xFromCenter)));
 
-    if (r1 < radius) {
-      if (radius < r2) {
-        const beat = Math.floor((16 * (450 - angle) / 360) + 0.5) % 16;
-        let state = (this.sequence[beat] + 1) % 3;
-        this.sequence[beat] = state;
-        experience.send('switchNote', soundworks.client.index, beat, state);
-      }
+    if (r1 < radius && radius < r2) {
+      const beat = Math.floor((this.numSteps * (450 - angle) / 360) + 0.5) % this.numSteps;
+      let state = (this.sequence[beat] + 1) % 3;
+      this.sequence[beat] = state;
+      experience.send('switchNote', soundworks.client.index, beat, state);
     }
   }
 
-  onMetroBeat(measureCount, beatCount) {
-    this.renderer.setHighlight(beatCount);
-
-    const state = this.sequence[beatCount];
+  onMetroBeat(measure, beat) {
+    const state = this.sequence[beat];
 
     if (state > 0) {
       const time = audioScheduler.currentTime;
@@ -226,6 +221,8 @@ export default class Co909 {
       src.buffer = (state === 1) ? this.instrument.low : this.instrument.high;
       src.start(time);
     }
+
+    this.renderer.setHighlight(beat);
   }
 
   onClear() {

@@ -1,11 +1,15 @@
 import * as soundworks from 'soundworks/client';
 import { decibelToLinear } from 'soundworks/utils/math';
 import sceneConfig from '../../shared/scenes-config';
+import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
+import SceneCollectiveLoops from './scenes/collective-loops';
 const audioContext = soundworks.audioContext;
 
 const sceneCtors = {
+  'off': SceneOff,
   'co-909': SceneCo909,
+  'collective-loops': SceneCollectiveLoops,
 };
 
 const template = `
@@ -29,25 +33,28 @@ export default class BarrelExperience extends soundworks.Experience {
     this.metricScheduler = this.require('metric-scheduler');
 
     this.scenes = {};
+    this.currentScene = null;
 
-    this.outputBusses = [null, null, null, null, null, null, null, null]; // 8 output channels (array of gain nodes)
-    this.crossFilters = [null, null, null, null, null, null, null, null]; // 8 channel cross-over filters (array of biquad filter nodes)
+    this.outputBusses = new Array(numOutputChannels); // output channels (array of gain nodes)
+    this.crossFilters = new Array(numOutputChannels); // channel cross-over filters (array of biquad filter nodes)
     this.wooferBuss = null; // bass woofer gain node
     this.wooferGain = 1; // bass woofer gain (linear amplitude factor)
     this.delay = 0.02;
+
+    this.onSceneChange = this.onSceneChange.bind(this);
   }
 
   start() {
     super.start();
 
-    this.initAudio(2); // init audio outputs for an interface of the given number of channels
-    this.initParams();
-    this.initScenes();
-
     this.view = new soundworks.View(template, {}, {}, { id: 'barrel' });
     this.show();
 
-    this.scenes['co-909'].enter();
+    this.initScenes();
+    this.currentScene.enter();
+
+    this.initAudio(2); // init audio outputs for an interface of the given number of channels
+    this.initParams();
   }
 
   initAudio(numAudioOutputs = 2) {
@@ -107,6 +114,7 @@ export default class BarrelExperience extends soundworks.Experience {
   }
 
   initParams() {
+    this.sharedParams.addParamListener('scene', this.onSceneChange);
     this.sharedParams.addParamListener('outputGain0', (value) => this.setOutputGain(0, value));
     this.sharedParams.addParamListener('outputGain1', (value) => this.setOutputGain(1, value));
     this.sharedParams.addParamListener('outputGain2', (value) => this.setOutputGain(2, value));
@@ -130,6 +138,8 @@ export default class BarrelExperience extends soundworks.Experience {
       else
         throw new Error(`Cannot find config for scene '${scene}'`);
     }
+
+    this.currentScene = this.scenes.off;
   }
 
   setOutputGain(index, value) {
@@ -147,5 +157,11 @@ export default class BarrelExperience extends soundworks.Experience {
 
   setDelay(value) {
     this.delay = value;
+  }
+
+  onSceneChange(value) {
+    this.currentScene.exit();
+    this.currentScene = this.scenes[value];
+    this.currentScene.enter();
   }
 }

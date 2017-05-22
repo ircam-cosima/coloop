@@ -5,10 +5,13 @@ export default class SceneCo909 {
     this.experience = experience;
     this.config = config;
 
-    this.instrumentSequences = new Array(config.instruments.length);
+    const numSteps = config.numSteps;
+    const numInstruments = config.instruments.length;
 
-    for (let i = 0; i < this.instrumentSequences.length; i++) {
-      this.instrumentSequences[i] = new Array(config.numSteps);
+    this.instrumentSequences = new Array(numInstruments);
+
+    for (let i = 0; i < numInstruments; i++) {
+      this.instrumentSequences[i] = new Array(numSteps);
       this.resetInstrumentSequence(i);
     }
 
@@ -17,7 +20,7 @@ export default class SceneCo909 {
     this.onSwitchNote = this.onSwitchNote.bind(this);
     this.onClear = this.onClear.bind(this);
 
-    this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, 16, 16, this.onMetroBeat);
+    this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
   }
 
   enter() {
@@ -38,6 +41,8 @@ export default class SceneCo909 {
 
     for (let client of experience.clients)
       this.clientExit(client);
+
+    this.resetAllInstrumentSequences();
   }
 
   clientEnter(client) {
@@ -51,6 +56,7 @@ export default class SceneCo909 {
     this.resetInstrumentSequence(client.index);
 
     const experience = this.experience;
+    //experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
     experience.sharedParams.removeParamListener('clear', this.onClear);
   }
 
@@ -60,6 +66,11 @@ export default class SceneCo909 {
     for (let i = 0; i < sequence.length; i++) {
       sequence[i] = 0;
     }
+  }
+
+  resetAllInstrumentSequences() {
+    for (let i = 0; i < this.instrumentSequences.length; i++)
+      this.resetInstrumentSequence(i);
   }
 
   setNoteState(instrument, beat, state) {
@@ -104,7 +115,6 @@ export default class SceneCo909 {
   }
 
   onClear() {
-    for (let i = 0; i < this.instrumentSequences.length; i++)
-      this.resetInstrumentSequence(i);
+    this.resetAllInstrumentSequences();
   }
 }

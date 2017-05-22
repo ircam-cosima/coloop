@@ -2,20 +2,20 @@ import * as soundworks from 'soundworks/client';
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
-export default class SceneCo909 {
+export default class SceneCollectiveLoops {
   constructor(experience, config) {
     this.experience = experience;
     this.config = config;
-    this.instruments = null;
+    this.notes = null;
 
     const numSteps = config.numSteps;
-    const numInstruments = config.instruments.length;
+    const numNotes = config.notes.length;
 
-    this.instrumentSequences = new Array(numInstruments);
+    this.stepStates = new Array(numSteps);
 
-    for (let i = 0; i < numInstruments; i++) {
-      this.instrumentSequences[i] = new Array(numSteps);
-      this.resetInstrumentSequence(i);
+    for (let i = 0; i < numSteps; i++) {
+      this.stepStates[i] = new Array(numNotes);
+      this.resetStepStates(i);
     }
 
     this.outputBusses = experience.outputBusses;
@@ -28,7 +28,7 @@ export default class SceneCo909 {
 
   enterScene() {
     const experience = this.experience;
-    const numSteps = this.config.numSteps;
+    const numSteps = this.stepStates.length;
     experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
     experience.receive('switchNote', this.onSwitchNote);
     experience.receive('disconnectClient', this.onDisconnectClient);
@@ -38,12 +38,12 @@ export default class SceneCo909 {
   enter() {
     const experience = this.experience;
 
-    if(this.instruments) {
+    if(this.notes) {
       this.enterScene();
     } else {
-      const instrumentConfig = this.config.instruments;
-      experience.audioBufferManager.loadFiles(instrumentConfig).then((instruments) => {
-        this.instruments = instruments;
+      const noteConfig = this.config.notes;
+      experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
+        this.notes = notes;
         this.enterScene();        
       });
     }
@@ -57,42 +57,44 @@ export default class SceneCo909 {
     experience.sharedParams.removeParamListener('clear', this.onClear());
   }
 
-  resetInstrumentSequence(instrument) {
-    const sequence = this.instrumentSequences[instrument];
+  resetStepStates(step) {
+    const states = this.stepStates[step];
 
-    for (let i = 0; i < sequence.length; i++) {
-      sequence[i] = 0;
+    for (let i = 0; i < states.length; i++) {
+      states[i] = 0;
     }
   }
 
   onMetroBeat(measure, beat) {
     const time = audioScheduler.currentTime;
+    const notes = this.notes;
+    const states = this.stepStates[beat];
+    const output = this.outputBusses[beat];
 
-    for (let i = 0; i < this.instrumentSequences.length; i++) {
-      const instrument = this.instruments[i];
-      const sequence = this.instrumentSequences[i];
-      const state = sequence[beat];
+    for (let i = 0; i < states.length; i++) {
+      const note = notes[i];
+      const state = states[i];
 
       if (state > 0) {
         const src = audioContext.createBufferSource();
-        src.connect(this.outputBusses[i]);
-        src.buffer = (state === 1) ? instrument.low : instrument.high;
+        src.connect(output);
+        src.buffer = note.buffer;
         src.start(time);
       }
     }
   }
 
-  onSwitchNote(instrument, beat, state) {
-    const sequence = this.instrumentSequences[instrument];
-    sequence[beat] = state;
+  onSwitchNote(step, note, state) {
+    const states = this.stepStates[step];
+    states[note] = state;
   }
 
-  onDisconnectClient(instrument) {
-    this.resetInstrumentSequence(instrument);
+  onDisconnectClient(step) {
+    this.resetStepStates(step);
   }
 
   onClear() {
-    for (let i = 0; i < this.instrumentSequences.length; i++)
-      this.resetInstrumentSequence(i);
+    for (let i = 0; i < this.stepStates.length; i++)
+      this.resetStepStates(i);
   }
 }

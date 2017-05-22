@@ -1,10 +1,14 @@
 import { Experience } from 'soundworks/server';
 import sceneConfig from '../shared/scenes-config';
 import Scheduler from './Scheduler';
+import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
+import SceneCollectiveLoops from './scenes/collective-loops';
 
 const sceneCtors = {
+  'off': SceneOff,
   'co-909': SceneCo909,
+  'collective-loops': SceneCollectiveLoops,
 };
 
 export default class PlayerExperience extends Experience {
@@ -15,27 +19,26 @@ export default class PlayerExperience extends Experience {
     this.sharedParams = this.require('shared-params');
     this.checkin = this.require('checkin');
     this.audioBufferManager = this.require('audio-buffer-manager');
+    this.syncScheduler = this.require('sync-scheduler');
     this.metricScheduler = this.require('metric-scheduler', { tempo: 120, tempoUnit: 1/4 });
     this.sync = this.require('sync');
 
     this.scheduler = null;
     this.scenes = {};
+    this.currentScene = null;
 
     this.onTempoChange = this.onTempoChange.bind(this);
+    this.onSceneChange = this.onSceneChange.bind(this);
   }
 
   start() {
     this.scheduler = new Scheduler(this.sync);
 
     this.initScenes();
+    this.currentScene.enter();
 
-    // hack forgotten intitialization of the metric scheduler (sorry, fixed for next soundworks release)
-    this.metricScheduler._metricSpeed = 0.5; // tempo: 120, tempoUnit: 1/4
+    this.metricScheduler._metricSpeed = 0.5; // hack forgotten intitialization (tempo: 120, tempoUnit: 1/4) of the metric scheduler (fixed for next soundworks release)
     this.sharedParams.addParamListener('tempo', this.onTempoChange);
-
-    const scene = this.scenes['co-909'];
-    this.currentScene = scene;
-    scene.enter();
   }
 
   enter(client) {
@@ -44,6 +47,7 @@ export default class PlayerExperience extends Experience {
 
     this.broadcast('barrel', null, 'connectClient', client.index);
     this.sharedParams.update('numPlayers', this.clients.length);
+    this.sharedParams.addParamListener('scene', this.onSceneChange);
   }
 
   exit(client) {
@@ -64,6 +68,8 @@ export default class PlayerExperience extends Experience {
       else
         throw new Error(`Cannot find config for scene '${scene}'`);
     }
+
+    this.currentScene = this.scenes.off;
   }
 
   onTempoChange(tempo) {
@@ -71,5 +77,11 @@ export default class PlayerExperience extends Experience {
     const metricPosition = this.metricScheduler.getMetricPositionAtSyncTime(syncTime);
 
     this.metricScheduler.sync(syncTime, metricPosition, tempo, 1/4, 'tempoChange');
+  }
+
+  onSceneChange(value) {
+    this.currentScene.exit();
+    this.currentScene = this.scenes[value];
+    this.currentScene.enter();
   }
 }
