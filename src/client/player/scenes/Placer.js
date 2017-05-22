@@ -70,7 +70,7 @@ const template = `
   <div class="foreground">
     <div class="section-top flex-middle"></div>
     <div class="section-center flex-middle">
-    <p class="big">Please take your place and touch the screen to continue...</p>
+    <p class="user-instruction">Please take your place and touch the screen to continue...</p>
     </div>
     <div class="section-bottom flex-middle"></div>
   </div>
