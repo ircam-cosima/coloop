@@ -46,21 +46,14 @@ export default class Placer {
 
     this.callbacks = [];
     this.blinkers = [];
-
-    this.onPlacerReadys = [];
   }
 
   start(client, callback = function() {}) {
     const experience = this.experience;
 
-    console.log("start:", this.callbacks, client.index);
     this.callbacks[client.index] = callback;
 
-    if(!this.onPlacerReadys[client.index]) {
-      const onPlacerReady = () => this.onPlacerReady(client);
-      experience.receive(client, 'placerReady', onPlacerReady);
-      this.onPlacerReadys[client.index] = onPlacerReady;
-    }
+    experience.receive(client, 'placerReady', () => this.onPlacerReady(client));
 
     const blinker = new Blinker(experience.scheduler, client.index);
     blinker.start();
@@ -80,17 +73,18 @@ export default class Placer {
     if (callback) {
       delete this.callbacks[client.index];
 
-      // const experience = this.experience;
-      // experience.stopReceiving(client, 'ready', this.onPlacerReady);
+      const experience = this.experience;
+      experience.stopReceiving(client, 'ready', this.onPlacerReady);
     }
-
-    console.log("stop:", this.callbacks, client.index);
   }
 
   onPlacerReady(client) {
     console.log("onPlacerReady:", client.index);
     const callback = this.callbacks[client.index];
-    this.stop(client);
-    callback();
+
+    if(callback) {
+      this.stop(client);
+      callback();
+    }
   }
 }

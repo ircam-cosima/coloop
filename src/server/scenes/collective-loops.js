@@ -56,11 +56,9 @@ export default class SceneCollectiveLoops {
   clientEnter(client) {
     this.experience.receive(client, 'switchNote', this.onSwitchNote);
 
-    console.log("client enter:", client.index);
-
     this.isPlacing[client.index] = true;
     this.placer.start(client, () => {
-      this.isPlacing[client.index] = false;  
+      this.isPlacing[client.index] = false;
     });
   }
 
@@ -70,8 +68,6 @@ export default class SceneCollectiveLoops {
 
     this.placer.stop(client);
     this.isPlacing[client.index] = false;
-
-    console.log("client exit:", client.index);
   }
 
   resetStepStates(step) {
@@ -101,29 +97,32 @@ export default class SceneCollectiveLoops {
 
   onMetroBeat(measure, beat) {
     const states = this.stepStates[beat];
+    const isPlacing = this.isPlacing[beat];
 
     // control LED display
     if (beat === 0)
       console.log("P P P B B B B B B M M M M M M M M M M M M -", measure);
 
-    let str = "";
-    for (let i = 0; i < states.length; i++) {
-      const state = states[i];
-      const isPlacing = this.isPlacing[i];
-      let sub = '  ';
+    if (!isPlacing) {
+      let str = "";
 
-      // make sure that this LED display doesn't interfere with place blinker
-      if (!isPlacing) {
+      for (let i = 0; i < states.length; i++) {
+        const state = states[i];
+        let sub = '  ';
+
+        // make sure that this LED display doesn't interfere with place blinker
         if (state === 1)
           sub = String.fromCharCode(0x25EF) + ' ';
         else
-          sub = '. ';          
+          sub = '. ';
+
+        str += sub;
       }
 
-      str += sub;
+      console.log(str);
+    } else {
+      console.log("- - - - - - - - - - - - - - - - - - - - -");
     }
-
-    console.log(str);
   }
 
   onSwitchNote(step, note, state) {
