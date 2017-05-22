@@ -46,15 +46,15 @@ class Renderer extends soundworks.Canvas2dRenderer {
 
       switch (note.class) {
         case 'perc':
-          ctx.strokeStyle = "#ff0000";
+          ctx.strokeStyle = '#ffe066';
           break;
 
         case 'bass':
-          ctx.strokeStyle = "#00ff00";
+          ctx.strokeStyle = '#67c0fc';
           break;
 
         case 'melody':
-          ctx.strokeStyle = "#0000ff";
+          ctx.strokeStyle = '#f45d4e';
           break;
       }
 
@@ -86,7 +86,7 @@ const template = `
   <div class="foreground">
     <div class="section-top flex-middle"></div>
     <div class="section-center flex-middle">
-    <p class="step-index"><%= stepIndex %></p>
+    <p class="player-index"><%= stepIndex %></p>
     </div>
     <div class="section-bottom flex-middle"></div>
   </div>
