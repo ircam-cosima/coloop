@@ -21,7 +21,8 @@ export default class SceneCo909 {
     this.onClear = this.onClear.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
-  }
+
+     }
 
   enter() {
     const experience = this.experience;
