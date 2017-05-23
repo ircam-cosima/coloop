@@ -1,4 +1,5 @@
 import SerialPort from 'serialport';
+const EventEmitter = require('events');
 
 export default class LedDisplay extends EventEmitter {
   constructor() {
