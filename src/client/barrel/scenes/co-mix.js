@@ -8,16 +8,7 @@ export default class SceneCoMix {
     this.config = config;
     this.notes = null;
 
-    const numSteps = config.numSteps;
-    const numNotes = config.barrelNotes.length;
-
-    this.stepStates = new Array(numSteps);
-
-    for (let i = 0; i < numSteps; i++) {
-      this.stepStates[i] = new Array(numNotes);
-      this.resetStepStates(i);
-    }
-
+    const numTracks = config.tracks.length;
     this.outputBusses = experience.outputBusses;
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
@@ -26,8 +17,7 @@ export default class SceneCoMix {
 
   enterScene() {
     const experience = this.experience;
-    const numSteps = this.stepStates.length;
-    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1);
     experience.receive('disconnectClient', this.onDisconnectClient);
   }
 
@@ -37,9 +27,9 @@ export default class SceneCoMix {
     if(this.notes) {
       this.enterScene();
     } else {
-      const noteConfig = this.config.barrelNotes;
-      experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
-        this.notes = notes;
+      const trackConfig = this.config.tracks;
+      experience.audioBufferManager.loadFiles(trackConfig).then((tracks) => {
+        this.tracks = tracks;
         this.enterScene();        
       });
     }
@@ -51,12 +41,8 @@ export default class SceneCoMix {
     experience.stopReceiving('disconnectClient', this.onDisconnectClient);
   }
 
-  resetStepStates(step) {
-    const states = this.stepStates[step];
+  stopTrack(step) {
 
-    for (let i = 0; i < states.length; i++) {
-      states[i] = 0;
-    }
   }
 
   onMetroBeat(measure, beat) {
@@ -64,6 +50,6 @@ export default class SceneCoMix {
   }
 
   onDisconnectClient(index) {
-    this.resetTrack(step);
+    this.stopTrack(step);
   }
 }
