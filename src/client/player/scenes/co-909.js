@@ -8,33 +8,26 @@ function radToDegrees(radians) {
 }
 
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(states) {
+  constructor(states, circleRadius, buttonRadius) {
     super(0);
 
     this.states = states;
+    this.circleRadius = circleRadius;
+    this.buttonRadius = buttonRadius;
     this.highlight = undefined;
   }
 
   init() {
-    const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
-    const r = canvasMax / 5;
+    const circleRadius = this.circleRadius;
 
     this.positionXArr = [];
     this.positionYArr = [];
 
-    function initPositionX(i) {
-      let x = (r * Math.cos(Math.PI / 2 - (i * (Math.PI / 8))));
-      return x;
-    }
-
-    function initPositionY(i) {
-      let y = (r * Math.sin(Math.PI / 2 - (i * (Math.PI / 8))));
-      return y;
-    }
-
     for (let i = 0; i < this.states.length; i++) {
-      this.positionXArr.push(initPositionX(i));
-      this.positionYArr.push(initPositionY(i));
+      const x = circleRadius * Math.cos(Math.PI / 2 - (i * (Math.PI / 8)));
+      const y = circleRadius * Math.sin(Math.PI / 2 - (i * (Math.PI / 8)));
+      this.positionXArr.push(x);
+      this.positionYArr.push(y);
     }
   }
 
@@ -45,9 +38,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
   render(ctx) {
     ctx.save();
 
-    const canvasMax = Math.max(this.canvasWidth, this.canvasHeight);
-    const r = canvasMax / 5;
-    const stepRadius = r / 6;
+    const buttonRadius = this.buttonRadius;
     const states = this.states;
     const numSteps = states.length;
     const yMargin = this.canvasHeight / 2;
@@ -91,7 +82,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
           break;
       }
 
-      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], stepRadius, stepRadius, 0, 0, 2 * Math.PI);
+      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
       ctx.closePath();
@@ -130,7 +121,10 @@ export default class SceneCo909 {
     this.sequence = new Array(this.numSteps);
     this.resetSequence();
 
-    this.renderer = new Renderer(this.sequence);
+    const canvasMin = Math.min(window.innerWidth, window.innerHeight);
+    this.buttonRadius = canvasMin / 15;
+    this.circleRadius = canvasMin / 2 - this.buttonRadius - 10;
+    this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius);
     this.audioOutput = experience.audioOutput;
 
     this.onClear = this.onClear.bind(this);
@@ -189,22 +183,20 @@ export default class SceneCo909 {
       this.sequence[i] = 0;
   }
 
-  onTouchStart(id, normX, normY) {
+  onTouchStart(id, x, y) {
     const experience = this.experience;
-    const boundingRect = this.$viewElem.getBoundingClientRect();
-    const x = 2 * normX * boundingRect.width;
-    const y = 2 * normY * boundingRect.height;
-    const xFromCenter = x - boundingRect.width;
-    const yFromCenter = -(y - boundingRect.height);
-    const x0 = boundingRect.width;
-    const y0 = boundingRect.height;
-    const radius = Math.sqrt(Math.pow((x - x0), 2) + Math.pow((y - y0), 2));
-    const canvasMax = Math.max(boundingRect.width * 2, boundingRect.height * 2);
-    const r1 = canvasMax / 6;
-    const r2 = canvasMax / 4;
-    const angle = Math.floor(radToDegrees(Math.atan2(yFromCenter, xFromCenter)));
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const x0 = width / 2;
+    const y0 = height / 2;
+    const relX = x - x0;
+    const relY = y - y0;
+    const radius = Math.sqrt(relX * relX + relY * relY);
+    const minRadius = this.circleRadius - 2 * this.buttonRadius;
+    const maxRadius = this.circleRadius + 2 * this.buttonRadius;
+    const angle = Math.floor(radToDegrees(Math.atan2(-relY, relX)));
 
-    if (r1 < radius && radius < r2) {
+    if (radius > minRadius && radius < maxRadius) {
       const beat = Math.floor((this.numSteps * (450 - angle) / 360) + 0.5) % this.numSteps;
       let state = (this.sequence[beat] + 1) % 3;
       this.sequence[beat] = state;

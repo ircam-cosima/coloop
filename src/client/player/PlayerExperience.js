@@ -58,7 +58,7 @@ export default class PlayerExperience extends soundworks.Experience {
     });
 
     this.show().then(() => {
-      this.surface = new soundworks.TouchSurface(this.view.$el);
+      this.surface = new soundworks.TouchSurface(this.view.$el, { normalizeCoordinates: false } );
 
       this.initAudio();
       this.initScenes();

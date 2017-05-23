@@ -186,9 +186,11 @@ export default class SceneCollectiveLoops {
       this.states[i] = 0;
   }
 
-  onTouchStart(id, normX, normY) {
+  onTouchStart(id, x, y) {
     const experience = this.experience;
     const numStates = this.states.length;
+    const normX = x / window.innerWidth;
+    const normY = y / window.innerHeight;
     const note = numStates - 1 - Math.floor(normY * numStates);
     const noteClass = this.notes[note].class;
     const state = (this.states[note] + 1) % 2;
