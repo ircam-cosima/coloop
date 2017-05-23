@@ -64,7 +64,7 @@ export default class SceneCollectiveLoops {
 
   clientExit(client) {
     this.resetStepStates(client.index);
-    //this.experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
+    this.experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
 
     this.placer.stop(client);
     this.isPlacing[client.index] = false;

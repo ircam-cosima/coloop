@@ -33,7 +33,7 @@ server.setClientConfigDefinition((clientType, config, httpRequest) => {
 
 const sharedParams = server.require('shared-params');
 sharedParams.addText('numPlayers', 'num players', 0, ['controller']);
-sharedParams.addEnum('scene', 'scene', ['off', 'co-909', 'collective-loops'], 'off', ['controller', 'player', 'barrel']);
+sharedParams.addEnum('scene', 'scene', ['off', 'co-909', 'collective-loops', 'co-mix'], 'off');
 sharedParams.addNumber('outputGain0', 'output 0 gain', -40, 20, 1, 0, ['controller', 'barrel']);
 sharedParams.addNumber('outputGain1', 'output 1 gain', -40, 20, 1, 0, ['controller', 'barrel']);
 sharedParams.addNumber('outputGain2', 'output 2 gain', -40, 20, 1, 0, ['controller', 'barrel']);
@@ -46,7 +46,8 @@ sharedParams.addNumber('wooferGain', 'woofer gain', -40, 20, 1, 0, ['controller'
 sharedParams.addNumber('wooferCutoff', 'woofer cutoff', 50, 500, 5, 250, ['controller', 'barrel']);
 sharedParams.addNumber('barrelDelay', 'barrel delay', 0, 0.1, 0.02, 0.001, ['controller', 'barrel']);
 sharedParams.addNumber('tempo', 'tempo', 60, 240, 5, 120, ['controller']);
-sharedParams.addTrigger('clear', 'clear');
+sharedParams.addTrigger('clear', 'clear players');
+sharedParams.addTrigger('reload', 'reload players');
 
 const controllerExperience = new ControllerExperience('controller');
 const barrelExperience = new BarrelExperience('barrel');

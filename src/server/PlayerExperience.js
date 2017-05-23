@@ -4,11 +4,13 @@ import Scheduler from './Scheduler';
 import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
 import SceneCollectiveLoops from './scenes/collective-loops';
+import SceneCoMix from './scenes/co-mix';
 
 const sceneCtors = {
   'off': SceneOff,
   'co-909': SceneCo909,
   'collective-loops': SceneCollectiveLoops,
+  'co-mix': SceneCoMix,
 };
 
 export default class PlayerExperience extends Experience {

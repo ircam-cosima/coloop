@@ -2,7 +2,7 @@ import * as soundworks from 'soundworks/client';
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
-export default class SceneCollectiveLoops {
+export default class SceneCoMix {
   constructor(experience, config) {
     this.experience = experience;
     this.config = config;
@@ -21,18 +21,14 @@ export default class SceneCollectiveLoops {
     this.outputBusses = experience.outputBusses;
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
-    this.onSwitchNote = this.onSwitchNote.bind(this);
     this.onDisconnectClient = this.onDisconnectClient.bind(this);
-    this.onClear = this.onClear.bind(this);
   }
 
   enterScene() {
     const experience = this.experience;
     const numSteps = this.stepStates.length;
     experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
-    experience.receive('switchNote', this.onSwitchNote);
     experience.receive('disconnectClient', this.onDisconnectClient);
-    experience.sharedParams.addParamListener('clear', this.onClear);    
   }
 
   enter() {
@@ -52,9 +48,7 @@ export default class SceneCollectiveLoops {
   exit() {
     const experience = this.experience;
     experience.metricScheduler.removeMetronome(this.onMetroBeat);
-    experience.stopReceiving('switchNote', this.onSwitchNote);
     experience.stopReceiving('disconnectClient', this.onDisconnectClient);
-    experience.sharedParams.removeParamListener('clear', this.onClear());
   }
 
   resetStepStates(step) {
@@ -67,38 +61,9 @@ export default class SceneCollectiveLoops {
 
   onMetroBeat(measure, beat) {
     const time = audioScheduler.currentTime;
-    const notes = this.notes;
-    const states = this.stepStates[beat];
-    const output = this.outputBusses[beat];
-
-    for (let i = 0; i < states.length; i++) {
-      const note = notes[i];
-      const state = states[i];
-
-      if (state > 0) {
-        const gain = audioContext.createGain();
-        gain.connect(output);
-        gain.gain.value = note.gain;
-
-        const src = audioContext.createBufferSource();
-        src.connect(gain);
-        src.buffer = note.buffer;
-        src.start(time);
-      }
-    }
   }
 
-  onSwitchNote(step, note, state) {
-    const states = this.stepStates[step];
-    states[note] = state;
-  }
-
-  onDisconnectClient(step) {
-    this.resetStepStates(step);
-  }
-
-  onClear() {
-    for (let i = 0; i < this.stepStates.length; i++)
-      this.resetStepStates(i);
+  onDisconnectClient(index) {
+    this.resetTrack(step);
   }
 }

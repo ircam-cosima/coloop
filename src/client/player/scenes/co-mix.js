@@ -92,7 +92,7 @@ const template = `
   </div>
 `;
 
-export default class SceneCollectiveLoops {
+export default class SceneCoMix {
   constructor(experience, config) {
     this.experience = experience;
     this.config = config;

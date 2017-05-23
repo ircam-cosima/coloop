@@ -3,12 +3,14 @@ import sceneConfig from '../../shared/scenes-config';
 import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
 import SceneCollectiveLoops from './scenes/collective-loops';
+import SceneCoMix from './scenes/co-mix';
 const audioContext = soundworks.audioContext;
 
 const sceneCtors = {
   'off': SceneOff,
   'co-909': SceneCo909,
   'collective-loops': SceneCollectiveLoops,
+  'co-mix': SceneCoMix,
 };
 
 const template = `
@@ -65,6 +67,7 @@ export default class PlayerExperience extends soundworks.Experience {
       this.currentScene.enter();
 
       this.sharedParams.addParamListener('scene', this.onSceneChange);
+      this.sharedParams.addParamListener('reload', this.onReload);
     });
   }
 
@@ -108,5 +111,9 @@ export default class PlayerExperience extends soundworks.Experience {
     this.currentScene.exit();
     this.currentScene = this.scenes[value];
     this.currentScene.enter();
+  }
+
+  onReload(value) {
+    window.location.reload();
   }
 }
