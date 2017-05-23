@@ -1,4 +1,5 @@
 import Metronome from '../Metronome';
+import LedDisplay from '../LedDisplay';
 
 export default class SceneCo909 {
   constructor(experience, config) {
@@ -21,6 +22,9 @@ export default class SceneCo909 {
     this.onClear = this.onClear.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
+
+    this.display = new LedDisplay();
+    this.display.connect("/dev/tty.wchusbserial1410");
   }
 
   enter() {
