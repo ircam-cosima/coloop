@@ -21,7 +21,8 @@
     "babel-runtime": "^6.6.1",
     "debug": "^2.6.4",
     "soundworks": "https://github.com/collective-soundworks/soundworks#coloop",
-    "source-map-support": "^0.4.0"
+    "source-map-support": "^0.4.0",
+    "serialport": "^4.0.7"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",

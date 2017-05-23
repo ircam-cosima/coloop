@@ -1,6 +1,7 @@
 import { Experience } from 'soundworks/server';
 import sceneConfig from '../shared/scenes-config';
 import Scheduler from './Scheduler';
+import LedDisplay from './LedDisplay';
 import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
 import SceneCollectiveLoops from './scenes/collective-loops';
@@ -35,6 +36,9 @@ export default class PlayerExperience extends Experience {
 
   start() {
     this.scheduler = new Scheduler(this.sync);
+
+    this.ledDisplay = new LedDisplay();
+    this.ledDisplay.connect("/dev/tty.wchusbserial1410");
 
     this.initScenes();
     this.currentScene.enter();

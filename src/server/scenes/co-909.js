@@ -20,13 +20,15 @@ export default class SceneCo909 {
     this.onSwitchNote = this.onSwitchNote.bind(this);
     this.onClear = this.onClear.bind(this);
 
-    this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
+    this.onButtonTurned = this.onButtonTurned.bind(this);
 
-     }
+    this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
+  }
 
   enter() {
     const experience = this.experience;
     experience.sharedParams.addParamListener('tempo', this.onTempoChange);
+    experience.ledDisplay.addListener('buttonTurned', this.onButtonTurned);
 
     this.metronome.start();
 
@@ -37,6 +39,7 @@ export default class SceneCo909 {
   exit() {
     const experience = this.experience;
     experience.sharedParams.removeParamListener('tempo', this.onTempoChange);
+    experience.ledDisplay.removeListener('buttonTurned', this.onButtonTurned);
 
     this.metronome.stop();
 
@@ -117,5 +120,9 @@ export default class SceneCo909 {
 
   onClear() {
     this.resetAllInstrumentSequences();
+  }
+
+  onButtonTurned(data) {
+    console.log("button turned:", data);
   }
 }
