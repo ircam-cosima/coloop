@@ -107,15 +107,18 @@ export default class SceneCo909 {
 
 
     let displaySelector = Math.round((24.0 / 16.0) * beat);
+
+    /// clear screen
     experience.ledDisplay.clearPixels();
     
     //console.log(displaySelector);
-
+    /// Display grid
     for (let i=0; i<16; i++) {
       let ds = Math.round((24.0 / 16.0) * i);
       experience.ledDisplay.line(ds, "0x808080");
     }
-
+    ///
+    /// show instruments
     for (let inst = 0; inst < instrumentSequences.length; inst++) {
       let sequence = instrumentSequences[inst];
       for (let i = 0; i < sequence.length; i++) {
@@ -125,8 +128,9 @@ export default class SceneCo909 {
         }
       }
     }
-
-     experience.ledDisplay.line(displaySelector, "0xFFFBCB");
+    ///
+    ///current beat line
+    experience.ledDisplay.line(displaySelector, "0xFFFBCB");
 
     if (beat === 0) {
       console.log("-------------------------");
@@ -144,9 +148,6 @@ export default class SceneCo909 {
         char = String.fromCharCode(0x25EF) + '  ';
       else if (state === 2)
         char = String.fromCharCode(0x25C9) + '  ';
-
-
-
       str += char;
     }
 
@@ -159,7 +160,7 @@ export default class SceneCo909 {
     // 0x00FFF5 cyan
     // 0xFF0279 rose 
     // 0xFF9102 orange
-
+    /// draw screen
     experience.ledDisplay.redraw();
     console.log(str, beat);
   }
