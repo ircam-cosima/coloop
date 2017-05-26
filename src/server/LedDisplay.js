@@ -1,5 +1,6 @@
 import SerialPort from 'serialport';
 const EventEmitter = require('events');
+const fs = require('fs');
 
 export default class LedDisplay extends EventEmitter {
   constructor() {
@@ -17,140 +18,168 @@ export default class LedDisplay extends EventEmitter {
   }
 
   connect(port) {
-    this.serialPort = new SerialPort(port, {
-      baudrate: 9600,
-      parser: SerialPort.parsers.readline('\n'),
-    });
+    // TODO convert this to async call
+    if (fs.existsSync(port)) {
+      this.serialPort = new SerialPort(port, {
+        baudrate: 115200,
+        parser: SerialPort.parsers.readline('\n'),
+      });
 
-    this.serialPort.on('open', function() {
-      console.log('Serial port opened');
+      this.serialPort.on('open', () => {
+        console.log('Serial port opened');
 
-    });
+      });
 
-    this.serialPort.on('data', function(data) {
-      if ((data.indexOf('+1') > -1) || (data.indexOf('-1') > -1)) {
-        this.emit('buttonTurned', data);
+      this.serialPort.on('data', (data) => {
+        if ((data.indexOf('+1') > -1) || (data.indexOf('-1') > -1)) {
+          this.emit('buttonTurned', data);
 
-        if (data.indexOf('+1') > -1)
-          this.emit('buttonIncrimented');
-        else if (data.indexOf('-1') > -1)
-          this.emit('buttonDecrimented');
-      } else if ((data.indexOf('touch') > -1) || (data.indexOf('released') > -1)) {
-        this.emit('buttonClick', data);
+          if (data.indexOf('+1') > -1)
+            this.emit('buttonIncrimented');
+          else if (data.indexOf('-1') > -1)
+            this.emit('buttonDecrimented');
+        } else if ((data.indexOf('touch') > -1) || (data.indexOf('released') > -1)) {
+          this.emit('buttonClick', data);
 
-        if (data.indexOf('touch') > -1)
-          this.emit('buttonTouch');
-        else if (data.indexOf('released') > -1)
-          this.emit('buttonReleased');
-      } else if (data.indexOf('°C') > -1) {
-        this.serialPort.emit('temperature', parseInt(data));
-      } else if (data.indexOf('Error')) {
-        this.emit('error', data);
-      }
-      console.log(data);
-    });
+          if (data.indexOf('touch') > -1)
+            this.emit('buttonTouch');
+          else if (data.indexOf('released') > -1)
+            this.emit('buttonReleased');
+        } else if (data.indexOf('°C') > -1) {
+          this.emit('temperature', parseInt(data));
+        } 
+        //console.log(data);
+      });
+    } else {
+      console.log("Port", port, "don't exist!! Can't open display");
+    }
   }
 
   /////////////////////////////////////////////
 
   /*
-   A 0xFFFFFF - all leds in this color
-   B 0xFFFFFF 55 - led 55 in this color, leds from 0-95
-   C 0xFFFFFF 3 - line 3 in this color, lines 0-24
-   D 0xFFFFFF 2 - segment 2 in this color, segment 0-7
-   E 0xFFFFFF 2 - circle in this color - from 0-3
-   F 0xFFFFFF 0xFFF222 3 - gradient from color 1 to color 2 line 3
-   G - turn off
-   H - turn on white
-   I - turn on LEDs
+     A 0xFFFFFF - all leds in this color
+     B 0xFFFFFF 55 - led 55 in this color, leds from 0-95
+     C 0xFFFFFF 3 - line 3 in this color, lines 0-24
+     D 0xFFFFFF 2 - segment 2 in this color, segment 0-7
+     E 0xFFFFFF 2 - circle in this color - from 0-3
+     F 0xFFFFFF 0xFFF222 3 - gradient from color 1 to color 2 line 3
+     G - turn off
+     H - turn on white
+     I - turn on LEDs
+     J 0xFFFFFF 0 2 - color on the line 0 and led 2
+
   */
 
   allPixels(hexColor) {
-    if (isHex(hexColor))
-      this.serialPort.write('A ' + hexColor + '\n');
-    else
-      throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+    if (this.serialPort) {
+      if (this.isHex(hexColor))
+        this.serialPort.write('A ' + hexColor + '\n');
+      else
+        throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+    }
   }
 
   pixel(led, hexColor) {
-    if ((led >= 0) && (led <= 95)) {
-      if (isHex(hexColor))
-        this.serialPort.write('B ' + hexColor + ' ' + pixels[led] + '\n');
-      else
-        throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
-    } else {
-      throw new Error(`Pixel number is out of scope! Pixels permitted : 0-95`);
+    if (this.serialPort) {
+      if ((led >= 0) && (led <= 95)) {
+        if (this.isHex(hexColor))
+          this.serialPort.write('B ' + hexColor + ' ' + this.pixels[led] + '\n');
+        else
+          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+      } else {
+        throw new Error(`Pixel number is out of scope! Pixels permitted : 0-95`);
+      }
     }
   }
 
   line(lineNumber, hexColor) {
-    if ((lineNumber >= 0) && (lineNumber <= 23)) {
-      if (isHex(hexColor))
-        this.serialPort.write('C ' + hexColor + ' ' + lineNumber + '\n');
-      else
-        throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
-    } else {
-      throw new Error(`Line number is out of scope! Lines permitted : 0-23`);
+    if (this.serialPort) {
+      if ((lineNumber >= 0) && (lineNumber <= 23)) {
+        if (this.isHex(hexColor))
+          this.serialPort.write('C ' + hexColor + ' ' + lineNumber + '\n');
+        else
+          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+      } else {
+        throw new Error(`Line number is out of scope! Lines permitted : 0-23`);
+      }
+    }
+  }
+
+  ledOnLine(lineNumber, led, hexColor) {
+    if (this.serialPort) {
+      this.serialPort.write('J ' + hexColor + ' ' + lineNumber + ' ' + led + '\n');
     }
   }
 
   segment(segmentNumber, hexColor) {
-    if ((segmentNumber >= 0) && (segmentNumber <= 7)) {
-      if (isHex(hexColor))
-        this.serialPort.write('D ' + hexColor + ' ' + segmentNumber + '\n');
-      else
-        throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
-    } else {
-      throw new Error(`Segment number is out of scope! Segments permitted : 0-7`);
+    if (this.serialPort) {
+      if ((segmentNumber >= 0) && (segmentNumber <= 7)) {
+        if (this.isHex(hexColor))
+          this.serialPort.write('D ' + hexColor + ' ' + segmentNumber + '\n');
+        else
+          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+      } else {
+        throw new Error(`Segment number is out of scope! Segments permitted : 0-7`);
+      }
     }
   }
 
   circle(circleNumber, hexColor) {
-    if ((circleNumber >= 0) && (circleNumber <= 3)) {
-      if (isHex(hexColor))
-        this.serialPort.write('E ' + hexColor + ' ' + circleNumber + '\n');
-      else
-        throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
-    } else {
-      throw new Error(`Circle number is out of scope! Circles permitted : 0-3`);
+    if (this.serialPort) {
+      if ((circleNumber >= 0) && (circleNumber <= 3)) {
+        if (this.isHex(hexColor))
+          this.serialPort.write('E ' + hexColor + ' ' + circleNumber + '\n');
+        else
+          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+      } else {
+        throw new Error(`Circle number is out of scope! Circles permitted : 0-3`);
+      }
     }
   }
 
   lineGradient(lineNumber, hexColor1, hexColor2) {
-    if ((lineNumber >= 0) && (lineNumber <= 23)) {
-      if ((isHex(hexColor1)) && (isHex(hexColor2)))
-        this.serialPort.write('F ' + hexColor1 + ' ' + hexColor2 + ' ' + lineNumber + '\n');
-      else
-        throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
-    } else {
-      throw new Error(`Line number is out of scope! Lines permitted : 0-23`);
+    if (this.serialPort) {
+      if ((lineNumber >= 0) && (lineNumber <= 23)) {
+        if ((isHex(hexColor1)) && (isHex(hexColor2)))
+          this.serialPort.write('F ' + hexColor1 + ' ' + hexColor2 + ' ' + lineNumber + '\n');
+        else
+          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+      } else {
+        throw new Error(`Line number is out of scope! Lines permitted : 0-23`);
+      }
     }
   }
-
+  
+  
   clearPixels() {
-    this.serialPort.write('G\n');
+    if (this.serialPort)
+      this.serialPort.write('G\n');
   }
 
   whitePixels() {
-    this.serialPort.write('H\n');
+    if (this.serialPort)
+      this.serialPort.write('H\n');
   }
 
   redraw() {
-    this.serialPort.write('I\n');
+    if (this.serialPort)
+      this.serialPort.write('I\n');
   }
 
   rgbToHex(r, g, b) {
-      var color = (r << 16) | (g << 8) | b;
-      var hex = '0x' + parseInt(color).toString(16);
+    var color = (r << 16) | (g << 8) | b;
+    var hex = '0x' + parseInt(color).toString(16);
 
-      while (hex.length < 8) {
-        hex += '0';
-      }
-
-      return hex;
+    while (hex.length < 8) {
+      hex += '0';
     }
-    // check if hex number is well formated
-    // it must be in format 0xFFFFFF
+
+    return hex;
+  }
+
+  // check if hex number is well formated
+  // it must be in format 0xFFFFFF
   isHex(h) {
     var hh = h.split('0x');
     if (hh.length == 2) {
