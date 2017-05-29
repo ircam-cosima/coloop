@@ -103,6 +103,7 @@ export default class SceneCollectiveLoops {
     if (beat === 0)
       console.log("P P P B B B B B B M M M M M M M M M M M M -", measure);
 
+    // make sure that this LED display doesn't interfere with place blinker
     if (!isPlacing) {
       let str = "";
 
@@ -110,7 +111,6 @@ export default class SceneCollectiveLoops {
         const state = states[i];
         let sub = '  ';
 
-        // make sure that this LED display doesn't interfere with place blinker
         if (state === 1)
           sub = String.fromCharCode(0x25EF) + ' ';
         else

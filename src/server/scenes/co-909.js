@@ -16,11 +16,7 @@ export default class SceneCo909 {
       this.resetInstrumentSequence(i);
     }
 
-    //temperature sensor
-    this.temperature = -273;
-
     this.primaryColors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
-
 
     this.onTempoChange = this.onTempoChange.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
@@ -29,7 +25,6 @@ export default class SceneCo909 {
 
     // display
     this.onButtonTurned = this.onButtonTurned.bind(this);
-    this.onTemperature = this.onTemperature.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
   }
@@ -38,7 +33,6 @@ export default class SceneCo909 {
     const experience = this.experience;
     this.experience.sharedParams.addParamListener('tempo', this.onTempoChange);
     experience.ledDisplay.addListener('buttonTurned', this.onButtonTurned);
-    experience.ledDisplay.addListener('temperature', this.onTemperature);
 
     this.metronome.start();
 
@@ -50,7 +44,6 @@ export default class SceneCo909 {
     const experience = this.experience;
     this.experience.sharedParams.removeParamListener('tempo', this.onTempoChange);
     experience.ledDisplay.removeListener('buttonTurned', this.onButtonTurned);
-    experience.ledDisplay.removeListener('temperature', this.onTemperature);
 
     this.metronome.stop();
 
@@ -132,12 +125,9 @@ export default class SceneCo909 {
     ///current beat line
     experience.ledDisplay.line(displaySelector, "0xFFFBCB");
 
-    if (beat === 0) {
-      console.log("-------------------------");
-      if (this.temperature > -273)
-        console.log("T=", this.temperature, "°C");
+    if (beat === 0) 
       console.log("BD SD HH MT PC HT LT CY -", measure);
-    }
+    
     let str = "";
     for (let i = 0; i < instrumentSequences.length; i++) {
       const sequence = instrumentSequences[i];
@@ -177,10 +167,5 @@ export default class SceneCo909 {
 
   onButtonTurned(data) {
     console.log("button turned:", data);
-  }
-
-  onTemperature(data) {
-    //console.log("TTTTT",data);
-    this.temperature = data;
   }
 }

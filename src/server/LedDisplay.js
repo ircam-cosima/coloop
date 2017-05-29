@@ -17,7 +17,7 @@ export default class LedDisplay extends EventEmitter {
     this.serialPort = null;
   }
 
-  connect(port) {
+  connect(port, openCallback = function() {}) {
     // TODO convert this to async call
     if (fs.existsSync(port)) {
       this.serialPort = new SerialPort(port, {
@@ -27,7 +27,7 @@ export default class LedDisplay extends EventEmitter {
 
       this.serialPort.on('open', () => {
         console.log('Serial port opened');
-
+        openCallback();
       });
 
       this.serialPort.on('data', (data) => {
@@ -47,11 +47,13 @@ export default class LedDisplay extends EventEmitter {
             this.emit('buttonReleased');
         } else if (data.indexOf('°C') > -1) {
           this.emit('temperature', parseInt(data));
-        } 
+        } else {
+          // console.log('received unhandled data from serial port:', data);
+        }
         //console.log(data);
       });
     } else {
-      console.log("Port", port, "don't exist!! Can't open display");
+      console.log("Port", port, "doesn't exist!! Cannot open display.");
     }
   }
 
@@ -70,7 +72,10 @@ export default class LedDisplay extends EventEmitter {
      J 0xFFFFFF 0 2 - color on the line 0 and led 2
 
   */
-
+  requestTemperature() {
+    if (this.serialPort)
+      this.serialPort.write('T\n');
+  }
   allPixels(hexColor) {
     if (this.serialPort) {
       if (this.isHex(hexColor))

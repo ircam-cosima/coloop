@@ -5,10 +5,11 @@ const minBlinkPeriod = 0.4;
 const maxBlinkPeriod = 1;
 
 class Blinker extends TimeEngine {
-  constructor(scheduler, index) {
+  constructor(experience, index) {
     super();
 
-    this.scheduler = scheduler;
+    this.scheduler = experience.scheduler;
+    this.experience = experience;
     this.index = index;
 
     const place = placerConfig[index];
@@ -18,9 +19,13 @@ class Blinker extends TimeEngine {
   }
 
   advanceTime(time) {
+    const experience = this.experience;
+    const ledDisplay = experience.ledDisplay;
+    
     // control LED display
     const onOff = this.state ? ('on, ' + this.color) : 'off';
     this.state = !this.state;
+    /// this.index - index PLAYER
     console.log(`blinking at place ${this.index + 1} (${onOff})`);
     return time + this.period;
   }
@@ -55,7 +60,7 @@ export default class Placer {
 
     experience.receive(client, 'placerReady', () => this.onPlacerReady(client));
 
-    const blinker = new Blinker(experience.scheduler, client.index);
+    const blinker = new Blinker(experience, client.index);
     blinker.start();
     this.blinkers[client.index] = blinker;
   }

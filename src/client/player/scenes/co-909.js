@@ -110,12 +110,15 @@ const template = `
 
 export default class SceneCo909 {
   constructor(experience, config) {
+
+    /// config 909
+    
     this.experience = experience;
     this.config = config;
 
     this.instrument = null;
     this.$viewElem = null;
-
+    // INDEX DE CLIENT
     this.clientIndex = soundworks.client.index;
     this.numSteps = config.numSteps;
     this.sequence = new Array(this.numSteps);
