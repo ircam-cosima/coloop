@@ -97,7 +97,6 @@ export default class SceneCollectiveLoops {
     this.experience = experience;
     this.config = config;
 
-    this.state = 'init';
     this.placer = new Placer(experience);
 
     this.clientIndex = soundworks.client.index;

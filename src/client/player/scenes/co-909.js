@@ -41,8 +41,8 @@ class Renderer extends soundworks.Canvas2dRenderer {
     const buttonRadius = this.buttonRadius;
     const states = this.states;
     const numSteps = states.length;
-    const yMargin = this.canvasHeight / 2;
-    const xMargin = this.canvasWidth / 2;
+    const x0 = this.canvasWidth / 2;
+    const y0 = this.canvasHeight / 2;
 
     for (let i = 0; i < numSteps; i++) {
       const state = states[i];
@@ -82,14 +82,13 @@ class Renderer extends soundworks.Canvas2dRenderer {
           break;
       }
 
-      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
+      ctx.ellipse(x0 + this.positionXArr[i], y0 - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
       ctx.closePath();
     }
 
     ctx.restore();
-
   }
 
   setHighlight(index) {
@@ -113,8 +112,8 @@ export default class SceneCo909 {
     this.experience = experience;
     this.config = config;
 
-    this.instrument = null;
     this.$viewElem = null;
+    this.instrument = null;
 
     this.clientIndex = soundworks.client.index;
     this.numSteps = config.numSteps;

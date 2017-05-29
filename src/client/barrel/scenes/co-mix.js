@@ -1,6 +1,7 @@
 import * as soundworks from 'soundworks/client';
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
+import LoopPlayer from '../../shared/LoopPlayer';
 
 export default class SceneCoMix {
   constructor(experience, config) {
@@ -11,14 +12,24 @@ export default class SceneCoMix {
     const numTracks = config.tracks.length;
     this.outputBusses = experience.outputBusses;
 
-    this.onMetroBeat = this.onMetroBeat.bind(this);
+    this.loopPlayer = null;
+
+    this.onConnectClient = this.onDisconnectClient.bind(this);
     this.onDisconnectClient = this.onDisconnectClient.bind(this);
+    this.onTrackCutoff = this.onTrackCutoff.bind(this);
+    this.onClear = this.onClear.bind(this);
   }
 
   enterScene() {
     const experience = this.experience;
-    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1);
     experience.receive('disconnectClient', this.onDisconnectClient);
+    experience.receive('trackCutoff', this.onTrackCutoff);
+    experience.sharedParams.addParamListener('clear', this.onClear);
+
+    if(!this.loopPlayer)
+      this.loopPlayer = new LoopPlayer(experience.metricScheduler, this.outputBusses, 1, config.tempo, config.tempoUnit, config.numBeats, 0.05);
+
+    this.loopPlayer.addLoopTrack();
   }
 
   enter() {
@@ -37,19 +48,32 @@ export default class SceneCoMix {
 
   exit() {
     const experience = this.experience;
-    experience.metricScheduler.removeMetronome(this.onMetroBeat);
     experience.stopReceiving('disconnectClient', this.onDisconnectClient);
+    experience.stopReceiving('trackCutoff', this.onTrackCutoff);
+    experience.sharedParams.removeParamListener('clear', this.onClear);
+
+    this.loopPlayer.stopAllTracks();
   }
 
-  stopTrack(step) {
-
-  }
-
-  onMetroBeat(measure, beat) {
-    const time = audioScheduler.currentTime;
+  onConnectClient(index) {
+    this.loopPlayer.addLoopTrack(index, loop);
   }
 
   onDisconnectClient(index) {
-    this.stopTrack(step);
+    const loopPlayer = this.loopPlayer;
+
+    if(loopPlayer)
+      loopPLayer.removeLoopTrack(index);
+  }
+
+  onTrackCutoff(index, value) {
+    const loopPlayer = this.loopPlayer;
+
+    if(loopPlayer)
+      loopPLayer.setCutoff(index, value);
+  }
+
+  onClear() {
+
   }
 }

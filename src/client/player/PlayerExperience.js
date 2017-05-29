@@ -29,9 +29,7 @@ export default class PlayerExperience extends soundworks.Experience {
     super();
 
     this.platform = this.require('platform', { features: ['web-audio'] });
-    // this.motionInput = this.require('motion-input', {
-    //   descriptors: ['accelerationIncludingGravity']
-    // });
+    this.motionInput = this.require('motion-input', { descriptors: ['accelerationIncludingGravity'] });
 
     this.scenes = {};
     this.currentScene = null;
@@ -60,7 +58,7 @@ export default class PlayerExperience extends soundworks.Experience {
     });
 
     this.show().then(() => {
-      this.surface = new soundworks.TouchSurface(this.view.$el, { normalizeCoordinates: false } );
+      this.surface = new soundworks.TouchSurface(this.view.$el, { normalizeCoordinates: false });
 
       this.initAudio();
       this.initScenes();
@@ -70,18 +68,6 @@ export default class PlayerExperience extends soundworks.Experience {
       this.sharedParams.addParamListener('reload', this.onReload);
     });
   }
-
-  // initMotion() {
-  //   if (this.motionInput.isAvailable('accelerationIncludingGravity')) {
-  //     this.motionInput.addListener('accelerationIncludingGravity', (data) => {
-  //       const accX = data[0];
-  //       const accY = data[1];
-  //       const accZ = data[2];
-  //       const mag = Math.sqrt(accX * accX + accY * accY + accZ * accZ);
-  //       /* ??? */
-  //     });
-  //   }
-  // }
 
   initSurface() {
     const surface = new soundworks.TouchSurface(this.view.$el);

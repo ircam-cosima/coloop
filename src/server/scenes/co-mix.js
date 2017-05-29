@@ -16,7 +16,7 @@ export default class CoMix {
 
     this.onTempoChange = this.onTempoChange.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
-    this.onTrackIntensity = this.onTrackIntensity.bind(this);
+    this.onTrackCutoff = this.onTrackCutoff.bind(this);
     this.onClear = this.onClear.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numBeats * numMeasures, numBeats, this.onMetroBeat);
@@ -49,7 +49,7 @@ export default class CoMix {
   }
 
   clientEnter(client) {
-    this.experience.receive(client, 'trackIntensity', this.onTrackIntensity);
+    this.experience.receive(client, 'trackCutoff', this.onTrackCutoff);
 
     this.isPlacing[client.index] = true;
     this.placer.start(client, () => {
@@ -59,7 +59,7 @@ export default class CoMix {
 
   clientExit(client) {
     this.stopTrack(client.index);
-    this.experience.stopReceiving(client, 'trackIntensity', this.onTrackIntensity);
+    this.experience.stopReceiving(client, 'trackCutoff', this.onTrackCutoff);
 
     this.placer.stop(client);
     this.isPlacing[client.index] = false;
@@ -82,8 +82,8 @@ export default class CoMix {
 
   }
 
-  onTrackIntensity(step, note, state) {
-    experience.broadcast('barrel', null, 'trackIntensity', track, intensity);
+  onTrackCutoff(track, value) {
+    experience.broadcast('barrel', null, 'trackCutoff', track, value);
   }
 
   onClear() {
