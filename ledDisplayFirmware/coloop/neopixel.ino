@@ -27,7 +27,7 @@ const int eyeCorrection[] = {  0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2,
 #define PIN            5
 
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS       96
+#define NUMPIXELS      128
 #define NUMSEGMENTS      8
 #define NUMPIXELSPERLINE 4
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);

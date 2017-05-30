@@ -8,13 +8,14 @@ function radToDegrees(radians) {
 }
 
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(states, circleRadius, buttonRadius) {
+  constructor(states, circleRadius, buttonRadius, instrumentColor) {
     super(0);
 
     this.states = states;
     this.circleRadius = circleRadius;
     this.buttonRadius = buttonRadius;
     this.highlight = undefined;
+    this.instrumentColor = instrumentColor;
   }
 
   init() {
@@ -49,42 +50,59 @@ class Renderer extends soundworks.Canvas2dRenderer {
 
       ctx.beginPath();
       ctx.globalAlpha = 1;
+      ctx.fillStyle = '#000000';
+      ctx.strokeStyle = "#ffffff";
 
+      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.closePath();
+
+      ctx.beginPath();
+      let internalCircle = buttonRadius;
       switch (state) {
         case 0:
           if (i === this.highlight) {
             ctx.fillStyle = '#606060';
-            ctx.strokeStyle = "#ffffff";
+            //ctx.strokeStyle = "#ffffff";
           } else {
             ctx.fillStyle = '#000000';
-            ctx.strokeStyle = "#ffffff";
+            //ctx.strokeStyle = "#ffffff";
           }
           break;
 
         case 1:
           if (i === this.highlight) {
+
             ctx.fillStyle = '#FFFFFF';
-            ctx.strokeStyle = "#ffffff";
+            //ctx.strokeStyle = "#ffffff";
           } else {
-            ctx.fillStyle = '#00217E';
-            ctx.strokeStyle = "#ffffff";
+            ctx.fillStyle = this.instrumentColor;
+            internalCircle = buttonRadius/2.0;
+            //ctx.strokeStyle = "#ffffff";
           }
           break;
 
         case 2:
           if (i === this.highlight) {
             ctx.fillStyle = '#FFFFFF';
-            ctx.strokeStyle = "#ffffff";
+            //ctx.strokeStyle = "#ffffff";
           } else {
-            ctx.fillStyle = '#A7BEFF';
-            ctx.strokeStyle = "#ffffff";
+            ctx.fillStyle = this.instrumentColor;
+            //ctx.strokeStyle = "#ffffff";
           }
           break;
       }
 
-      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
+      
+
+
+
+      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], internalCircle, internalCircle, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
+
       ctx.closePath();
     }
 
@@ -112,7 +130,7 @@ export default class SceneCo909 {
   constructor(experience, config) {
 
     /// config 909
-    
+
     this.experience = experience;
     this.config = config;
 
@@ -127,7 +145,8 @@ export default class SceneCo909 {
     const canvasMin = Math.min(window.innerWidth, window.innerHeight);
     this.buttonRadius = canvasMin / 15;
     this.circleRadius = canvasMin / 2 - this.buttonRadius - 10;
-    this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius);
+    let instrumentColor = this.config.instrumentColors[soundworks.client.index];
+    this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius, instrumentColor);
     this.audioOutput = experience.audioOutput;
 
     this.onClear = this.onClear.bind(this);
@@ -144,7 +163,7 @@ export default class SceneCo909 {
     experience.view.template = template;
     experience.view.render();
     experience.view.addRenderer(this.renderer);
-    experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
+    experience.view.setPreRender(function (ctx, dt, canvasWidth, canvasHeight) {
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#000000';
@@ -161,13 +180,13 @@ export default class SceneCo909 {
   enter() {
     const experience = this.experience;
 
-    if(this.instrument) {
+    if (this.instrument) {
       this.enterScene();
     } else {
       const instrumentConfig = this.config.playerInstruments[soundworks.client.index];
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
         this.instrument = instrument;
-        this.enterScene();        
+        this.enterScene();
       });
     }
   }

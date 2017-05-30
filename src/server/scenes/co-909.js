@@ -99,7 +99,7 @@ export default class SceneCo909 {
     const experience = this.experience;
 
 
-    let displaySelector = Math.round((24.0 / 16.0) * beat);
+    let displaySelector = Math.round((32.0 / 16.0) * beat);
 
     /// clear screen
     experience.ledDisplay.clearPixels();
@@ -107,7 +107,7 @@ export default class SceneCo909 {
     //console.log(displaySelector);
     /// Display grid
     for (let i=0; i<16; i++) {
-      let ds = Math.round((24.0 / 16.0) * i);
+      let ds = Math.round((32.0 / 16.0) * i);
       experience.ledDisplay.line(ds, "0x808080");
     }
     ///
@@ -116,7 +116,7 @@ export default class SceneCo909 {
       let sequence = instrumentSequences[inst];
       for (let i = 0; i < sequence.length; i++) {
         if ((sequence[i] === 1) || (sequence[i] === 2)) {
-          let ds = Math.round((24.0 / 16.0) * i);
+          let ds = Math.round((32.0 / 16.0) * i);
           experience.ledDisplay.ledOnLine(ds, inst%4, this.primaryColors[inst]);
         }
       }
