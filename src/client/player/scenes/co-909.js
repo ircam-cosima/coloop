@@ -98,7 +98,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
       
 
 
-
+      ctx.strokeStyle = "#000000";
       ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], internalCircle, internalCircle, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
