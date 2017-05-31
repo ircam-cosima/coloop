@@ -32,13 +32,17 @@ export default class PlayerExperience extends Experience {
 
     this.onTempoChange = this.onTempoChange.bind(this);
     this.onSceneChange = this.onSceneChange.bind(this);
+    this.onTemperature = this.onTemperature.bind(this);
   }
 
   start() {
     this.scheduler = new Scheduler(this.sync);
 
     this.ledDisplay = new LedDisplay();
-    this.ledDisplay.connect("/dev/tty.wchusbserial1410");
+    this.ledDisplay.connect('/dev/tty.wchusbserial1410', () => {
+      this.ledDisplay.addListener('temperature', this.onTemperature);
+      this.ledDisplay.requestTemperature();
+    });
 
     this.initScenes();
     this.currentScene.enter();
@@ -90,5 +94,10 @@ export default class PlayerExperience extends Experience {
     this.currentScene.exit();
     this.currentScene = this.scenes[value];
     this.currentScene.enter();
+  }
+
+  onTemperature(data) {
+    console.log('temperature:', data);
+    this.sharedParams.update('temperature', data);
   }
 }

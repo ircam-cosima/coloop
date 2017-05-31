@@ -23,7 +23,8 @@ const template = `
   </div>
 `;
 
-const numOutputChannels = 8;
+const numOutputChannels = 8; // "virtual" output channels
+const numAudioOutputs = 4; // "physical" audio outputs
 
 export default class BarrelExperience extends soundworks.Experience {
   constructor(assetsDomain) {
@@ -55,7 +56,7 @@ export default class BarrelExperience extends soundworks.Experience {
     this.initScenes();
     this.currentScene.enter();
 
-    this.initAudio(2); // init audio outputs for an interface of the given number of channels
+    this.initAudio(numAudioOutputs); // init audio outputs for an interface of the given number of channels
     this.initParams();
   }
 

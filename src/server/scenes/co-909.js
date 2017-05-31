@@ -1,3 +1,4 @@
+
 import Metronome from '../Metronome';
 
 export default class SceneCo909 {
@@ -15,11 +16,14 @@ export default class SceneCo909 {
       this.resetInstrumentSequence(i);
     }
 
+    this.primaryColors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
+
     this.onTempoChange = this.onTempoChange.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onSwitchNote = this.onSwitchNote.bind(this);
     this.onClear = this.onClear.bind(this);
 
+    // display
     this.onButtonTurned = this.onButtonTurned.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
@@ -27,7 +31,7 @@ export default class SceneCo909 {
 
   enter() {
     const experience = this.experience;
-    experience.sharedParams.addParamListener('tempo', this.onTempoChange);
+    this.experience.sharedParams.addParamListener('tempo', this.onTempoChange);
     experience.ledDisplay.addListener('buttonTurned', this.onButtonTurned);
 
     this.metronome.start();
@@ -38,7 +42,7 @@ export default class SceneCo909 {
 
   exit() {
     const experience = this.experience;
-    experience.sharedParams.removeParamListener('tempo', this.onTempoChange);
+    this.experience.sharedParams.removeParamListener('tempo', this.onTempoChange);
     experience.ledDisplay.removeListener('buttonTurned', this.onButtonTurned);
 
     this.metronome.stop();
@@ -80,6 +84,7 @@ export default class SceneCo909 {
   setNoteState(instrument, beat, state) {
     const sequence = this.instrumentSequences[instrument];
     sequence[beat] = state;
+
   }
 
   onTempoChange(tempo) {
@@ -91,10 +96,38 @@ export default class SceneCo909 {
 
   onMetroBeat(measure, beat) {
     const instrumentSequences = this.instrumentSequences;
+    const experience = this.experience;
 
-    if (beat === 0)
+
+    let displaySelector = Math.round((24.0 / 16.0) * beat);
+
+    /// clear screen
+    experience.ledDisplay.clearPixels();
+    
+    //console.log(displaySelector);
+    /// Display grid
+    for (let i=0; i<16; i++) {
+      let ds = Math.round((24.0 / 16.0) * i);
+      experience.ledDisplay.line(ds, "0x808080");
+    }
+    ///
+    /// show instruments
+    for (let inst = 0; inst < instrumentSequences.length; inst++) {
+      let sequence = instrumentSequences[inst];
+      for (let i = 0; i < sequence.length; i++) {
+        if ((sequence[i] === 1) || (sequence[i] === 2)) {
+          let ds = Math.round((24.0 / 16.0) * i);
+          experience.ledDisplay.ledOnLine(ds, inst%4, this.primaryColors[inst]);
+        }
+      }
+    }
+    ///
+    ///current beat line
+    experience.ledDisplay.line(displaySelector, "0xFFFBCB");
+
+    if (beat === 0) 
       console.log("BD SD HH MT PC HT LT CY -", measure);
-
+    
     let str = "";
     for (let i = 0; i < instrumentSequences.length; i++) {
       const sequence = instrumentSequences[i];
@@ -105,11 +138,21 @@ export default class SceneCo909 {
         char = String.fromCharCode(0x25EF) + '  ';
       else if (state === 2)
         char = String.fromCharCode(0x25C9) + '  ';
-
       str += char;
     }
 
-    console.log(str);
+    // 0xFF0000 - rouge
+    // 0x00FF55 - green
+    // 0x023EFF - Blue
+    // 0xFFFF00 - Yellow
+
+    // 0xD802FF violet
+    // 0x00FFF5 cyan
+    // 0xFF0279 rose 
+    // 0xFF9102 orange
+    /// draw screen
+    experience.ledDisplay.redraw();
+    console.log(str, beat);
   }
 
   onSwitchNote(instrument, beat, state) {
