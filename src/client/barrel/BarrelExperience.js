@@ -5,6 +5,7 @@ import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
 import SceneCollectiveLoops from './scenes/collective-loops';
 import SceneCoMix from './scenes/co-mix';
+import SceneWwryR from './scenes/wwry-r';
 const audioContext = soundworks.audioContext;
 
 const sceneCtors = {
@@ -12,6 +13,7 @@ const sceneCtors = {
   'co-909': SceneCo909,
   'collective-loops': SceneCollectiveLoops,
   'co-mix': SceneCoMix,
+  'wwry-r': SceneWwryR,
 };
 
 const template = `

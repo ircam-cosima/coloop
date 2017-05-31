@@ -155,7 +155,7 @@ class SegmentTrack {
   }
 }
 
-class LoopPlayer extends audio.TimeEngine {
+export default class LoopPlayer extends audio.TimeEngine {
   constructor(metricScheduler, audioOutputs, measureLength = 1, tempo = 120, tempoUnit = 1 / 4, transitionTime = 0.05, measureCallback = function(measureCount) {}) {
     super();
 
@@ -268,5 +268,3 @@ class LoopPlayer extends audio.TimeEngine {
     this.metricScheduler.remove(this);
   }
 }
-
-export default LoopPlayer;

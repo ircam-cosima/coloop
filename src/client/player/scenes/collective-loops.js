@@ -114,6 +114,9 @@ export default class SceneCollectiveLoops {
       'melody': [],
     };
 
+    this.notes = null;
+    this.isPlacing = false;
+
     this.renderer = new Renderer(this.states, config.playerNotes);
     this.audioOutput = experience.audioOutput;
 
@@ -122,12 +125,21 @@ export default class SceneCollectiveLoops {
   }
 
   startPlacer() {
-    this.placer.start(() => this.startScene());
+    const experience = this.experience;
+    const numSteps = this.config.numSteps;
+    
+    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
+    
+    this.isPlacing = true;
+
+    this.placer.start(() => {
+      this.isPlacing = false;
+      this.startScene();
+    });
   }
 
   startScene() {
     const experience = this.experience;
-    const numSteps = this.config.numSteps;
 
     this.$viewElem = experience.view.$el;
 
@@ -145,7 +157,6 @@ export default class SceneCollectiveLoops {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1, 1, this.clientIndex / numSteps);
   }
 
   enter() {
@@ -209,23 +220,27 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
-    const time = audioScheduler.currentTime;
-    const states = this.states;
-    const notes = this.notes;
+    if (this.isPlacing) {
+      this.placer.blink(((beat / 2) % 2) === 0);
+    } else if (beat === this.clientIndex) {
+      const time = audioScheduler.currentTime;
+      const states = this.states;
+      const notes = this.notes;
 
-    for (let i = 0; i < this.states.length; i++) {
-      const state = states[i];
-      const note = notes[i];
+      for (let i = 0; i < this.states.length; i++) {
+        const state = states[i];
+        const note = notes[i];
 
-      if (state > 0) {
-        const gain = audioContext.createGain();
-        gain.connect(this.audioOutput);
-        gain.gain.value = note.gain;
+        if (state > 0) {
+          const gain = audioContext.createGain();
+          gain.connect(this.audioOutput);
+          gain.gain.value = note.gain;
 
-        const src = audioContext.createBufferSource();
-        src.connect(gain);
-        src.buffer = note.buffer;
-        src.start(time);
+          const src = audioContext.createBufferSource();
+          src.connect(gain);
+          src.buffer = note.buffer;
+          src.start(time);
+        }
       }
     }
   }

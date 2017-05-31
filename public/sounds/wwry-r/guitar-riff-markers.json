@@ -1,0 +1,18 @@
+[
+  {"start": 0.100, "end": 0.509, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.305, "end": 1.445, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.000, "end": 1.180, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.283, "end": 1.429, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.000, "end": 1.180, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.283, "end": 1.429, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.305, "end": 1.445, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.546, "end": 1.790, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.546, "end": 1.790, "speed": 1.0, "sustain": 0.995},
+  {"start": 1.305, "end": 1.445, "speed": 1.0, "sustain": 0.995},
+  {"start": 2.030, "end": 2.364, "speed": 1.0, "sustain": 0},
+  {"start": 2.030, "end": 2.364, "speed": 1.0, "sustain": 0},
+  {"start": 2.440, "end": 2.750, "speed": 1.0, "sustain": 0},
+  {"start": 1.305, "end": 1.445, "speed": 1.0, "sustain": 0.995},
+  {"start": 2.850, "end": 3.040, "speed": 1.0, "sustain": 0},
+  {"start": 2.850, "end": 3.040, "speed": 1.0, "sustain": 0}
+];

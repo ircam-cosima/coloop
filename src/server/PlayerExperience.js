@@ -6,12 +6,14 @@ import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
 import SceneCollectiveLoops from './scenes/collective-loops';
 import SceneCoMix from './scenes/co-mix';
+import SceneWwryR from './scenes/wwry-r';
 
 const sceneCtors = {
   'off': SceneOff,
   'co-909': SceneCo909,
   'collective-loops': SceneCollectiveLoops,
   'co-mix': SceneCoMix,
+  'wwry-r': SceneWwryR,
 };
 
 export default class PlayerExperience extends Experience {
@@ -58,14 +60,14 @@ export default class PlayerExperience extends Experience {
     this.currentScene.enter();
 
     for (let client of this.clients)
-      this.currentScene.clientEnter(client);    
+      this.currentScene.clientEnter(client);
   }
 
   exitCurrentScene() {
     this.currentScene.exit();
 
     for (let client of this.clients)
-      this.currentScene.clientExit(client);    
+      this.currentScene.clientExit(client);
   }
 
   enter(client) {
@@ -101,6 +103,17 @@ export default class PlayerExperience extends Experience {
     this.enterCurrentScene();
   }
 
+  enableTempoChange(value) {
+    if (value !== this.tempoChangeEnabled) {
+      this.tempoChangeEnabled = value;
+
+      if (value)
+        this.sharedParams.addParamListener('tempo', this.onTempoChange);
+      else
+        this.sharedParams.removeParamListener('tempo', this.onTempoChange);      
+    }
+  }
+
   onSceneChange(value) {
     this.exitCurrentScene();
     this.currentScene = this.scenes[value];
@@ -115,13 +128,13 @@ export default class PlayerExperience extends Experience {
 
     const syncTime = this.metricScheduler.syncTime;
     const metricPosition = this.metricScheduler.getMetricPositionAtSyncTime(syncTime);
-    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1/4, 'tempoChange');
+    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1 / 4, 'tempoChange');
   }
 
   onClear() {
     const clearScene = this.currentScene.clear;
 
-    if(clearScene)
+    if (clearScene)
       clearScene();
   }
 

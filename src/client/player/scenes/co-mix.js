@@ -12,11 +12,11 @@ function clip(value) {
 const numDiv = 1024;
 
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(layer, measureDuration) {
+  constructor(measureDuration) {
     super(0);
 
     this.measureDuration = measureDuration;
-    this.layer = layer;
+    this.layer = null;
     this.layerIndex = 0;
     this.layerPending = false;
     this.measureStartTime = 0;
@@ -134,7 +134,7 @@ export default class SceneCoMix {
     this.measureDuration = 60 / (tempo * tempoUnit);
 
     const trackConfig = config.tracks[this.clientIndex];
-    this.renderer = new Renderer(trackConfig, this.measureDuration);
+    this.renderer = new Renderer(this.measureDuration);
 
     this.intensity = trackConfig.intensity;
     this.audioOutput = experience.audioOutput;

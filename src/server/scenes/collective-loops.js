@@ -89,14 +89,20 @@ export default class SceneCollectiveLoops {
 
   onMetroBeat(measure, beat) {
     const states = this.stepStates[beat];
-    const isPlacing = this.isPlacing[beat];
 
     // control LED display
+    for(let i = 0; i < this.stepStates.length; i++) {
+      const isPlacing = this.isPlacing[i];
+
+      if(isPlacing)
+        this.placer.blink(i, ((beat / 2) % 2) === 0);
+    }
+
     if (beat === 0)
       console.log("P P P B B B B B B M M M M M M M M M M M M -", measure);
 
     // make sure that this LED display doesn't interfere with place blinker
-    if (!isPlacing) {
+    if (!this.isPlacing[beat]) {
       let str = "";
 
       for (let i = 0; i < states.length; i++) {
