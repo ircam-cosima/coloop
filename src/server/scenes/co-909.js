@@ -103,31 +103,60 @@ export default class SceneCo909 {
 
     /// clear screen
     experience.ledDisplay.clearPixels();
-    
+
+    let simpleGrid = true;
+    for (let inst = 4; inst < instrumentSequences.length; inst++) {
+      let sequence = instrumentSequences[inst];
+      for (let i = 0; i < sequence.length; i++) {
+        if ((sequence[i] === 1) || (sequence[i] === 2)) {
+          simpleGrid = false;
+          break;
+        }
+      }
+    }
+
     //console.log(displaySelector);
     /// Display grid
-    for (let i=0; i<16; i++) {
-      let ds = Math.round((32.0 / 16.0) * i);
-      experience.ledDisplay.line(ds, "0x808080");
+    if (simpleGrid) {
+      for (let i = 0; i < 16; i++) {
+        let ds = Math.round((32.0 / 16.0) * i);
+        experience.ledDisplay.line(ds, "0x808080");
+      }
+    } else {
+      for (let i = 0; i < 32; i++) {
+        experience.ledDisplay.line(i, "0x808080");
+      }
     }
     ///
+
     /// show instruments
     for (let inst = 0; inst < instrumentSequences.length; inst++) {
       let sequence = instrumentSequences[inst];
       for (let i = 0; i < sequence.length; i++) {
         if ((sequence[i] === 1) || (sequence[i] === 2)) {
           let ds = Math.round((32.0 / 16.0) * i);
-          experience.ledDisplay.ledOnLine(ds, inst%4, this.primaryColors[inst]);
+          experience.ledDisplay.ledOnLine(ds, inst % 4, this.primaryColors[inst]);
         }
       }
     }
     ///
-    ///current beat line
-    experience.ledDisplay.line(displaySelector, "0xFFFBCB");
 
-    if (beat === 0) 
+    ///current beat line
+    if (simpleGrid) {
+      experience.ledDisplay.line(displaySelector, "0xFFFBCB");
+    } else {
+      /// double line
+      if (displaySelector < 31) {
+        experience.ledDisplay.line(displaySelector, "0xFFFBCB");
+        experience.ledDisplay.line(displaySelector + 1, "0xFFFBCB");
+      } else {
+        experience.ledDisplay.line(displaySelector, "0xFFFBCB");
+        experience.ledDisplay.line(0, "0xFFFBCB");
+      }
+    }
+    if (beat === 0)
       console.log("BD SD HH MT PC HT LT CY -", measure);
-    
+
     let str = "";
     for (let i = 0; i < instrumentSequences.length; i++) {
       const sequence = instrumentSequences[i];

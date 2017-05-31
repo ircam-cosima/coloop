@@ -17,8 +17,19 @@ export default class LedDisplay extends EventEmitter {
     this.serialPort = null;
   }
 
-  connect(port, openCallback = function() {}) {
+  connect(port = null, openCallback = function () { }) {
+
     // TODO convert this to async call
+    if (port === null) {
+
+      fs.readdirSync('/dev').forEach(file => {
+        if (file.indexOf("wchusbserial") > -1) {
+          port = '/dev/'+file;
+          console.log("Found screen in :", port);
+        }
+      });
+    }
+
     if (fs.existsSync(port)) {
       this.serialPort = new SerialPort(port, {
         baudrate: 115200,
@@ -70,7 +81,7 @@ export default class LedDisplay extends EventEmitter {
      H - turn on white
      I - turn on LEDs
      J 0xFFFFFF 0 2 - color on the line 0 and led 2
-
+ 
   */
   requestTemperature() {
     if (this.serialPort)
@@ -155,8 +166,8 @@ export default class LedDisplay extends EventEmitter {
       }
     }
   }
-  
-  
+
+
   clearPixels() {
     if (this.serialPort)
       this.serialPort.write('G\n');
