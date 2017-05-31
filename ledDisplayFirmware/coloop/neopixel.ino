@@ -66,8 +66,8 @@ void onTheline(int n, int onL, int r, int g, int b) { // 0-23 possible n of line
 }
 
 void cluster(int n, int r, int g, int b) { // 0-7 possible n of segments
-  int start = n * 12;
-  for (int i = start; i < start + 12; i++) setLight(i, r, g, b);
+  int start = n * 16;
+  for (int i = start; i < start + 16; i++) setLight(i, r, g, b);
 }
 
 void circle(int n, int r, int g, int b) { // 0-3
