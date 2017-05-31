@@ -40,7 +40,9 @@ export default class PlayerExperience extends Experience {
     this.scheduler = new Scheduler(this.sync);
 
     this.ledDisplay = new LedDisplay();
-    this.ledDisplay.connect('/dev/tty.wchusbserial1410', () => {
+    this.ledDisplay.connect(null, () => {
+      // null means automatic port search, otherwise put something like : /dev/tty.wchusbserial1420
+
       this.ledDisplay.addListener('temperature', this.onTemperature);
       this.ledDisplay.requestTemperature();
     });

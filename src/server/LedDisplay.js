@@ -8,17 +8,28 @@ export default class LedDisplay extends EventEmitter {
 
     // polar corrdinates
     this.pixels = [
-      7, 8, 15, 16, 23, 24, 31, 32, 39, 40, 47, 48, 55, 56, 63, 64, 71, 72, 79, 80, 87, 88, 95, 0, // line 0
-      1, 6, 9, 14, 17, 22, 25, 30, 33, 38, 41, 46, 49, 54, 57, 62, 65, 70, 73, 78, 81, 86, 89, 94, // line 1
-      2, 5, 10, 13, 18, 21, 26, 29, 34, 37, 42, 45, 50, 53, 58, 61, 66, 69, 74, 77, 82, 85, 90, 93, // line 2
-      3, 4, 11, 12, 19, 20, 27, 28, 35, 36, 43, 44, 51, 52, 59, 60, 67, 68, 75, 76, 83, 84, 91, 92 // line 3
+      7, 8, 15, 16, 23, 24, 31, 32, 39, 40, 47, 48, 55, 56, 63, 64, 71, 72, 79, 80, 87, 88, 95, 96, 103, 104, 111, 112, 119, 120, 127, 0,
+      1, 6, 9, 14, 17, 22, 25, 30, 33, 38, 41, 46, 49, 54, 57, 62, 65, 70, 73, 78, 81, 86, 89, 94, 97, 102, 105, 110, 113, 118, 121, 126,
+      2, 5, 10, 13, 18, 21, 26, 29, 34, 37, 42, 45, 50, 53, 58, 61, 66, 69, 74, 77, 82, 85, 90, 93, 98, 101, 106, 109, 114, 117, 122, 125,
+      3, 4, 11, 12, 19, 20, 27, 28, 35, 36, 43, 44, 51, 52, 59, 60, 67, 68, 75, 76, 83, 84, 91, 92, 99, 100, 107, 108, 115, 116, 123, 124
     ];
 
     this.serialPort = null;
   }
 
-  connect(port, openCallback = function() {}) {
+  connect(port = null, openCallback = function () { }) {
+
     // TODO convert this to async call
+    if (port === null) {
+
+      fs.readdirSync('/dev').forEach(file => {
+        if (file.indexOf("wchusbserial") > -1) {
+          port = '/dev/' + file;
+          console.log("Found screen in :", port);
+        }
+      });
+    }
+
     if (fs.existsSync(port)) {
       this.serialPort = new SerialPort(port, {
         baudrate: 115200,
@@ -70,7 +81,7 @@ export default class LedDisplay extends EventEmitter {
      H - turn on white
      I - turn on LEDs
      J 0xFFFFFF 0 2 - color on the line 0 and led 2
-
+ 
   */
   requestTemperature() {
     if (this.serialPort)
@@ -87,7 +98,7 @@ export default class LedDisplay extends EventEmitter {
 
   pixel(led, hexColor) {
     if (this.serialPort) {
-      if ((led >= 0) && (led <= 95)) {
+      if ((led >= 0) && (led <= 127)) {
         if (this.isHex(hexColor))
           this.serialPort.write('B ' + hexColor + ' ' + this.pixels[led] + '\n');
         else
@@ -100,13 +111,13 @@ export default class LedDisplay extends EventEmitter {
 
   line(lineNumber, hexColor) {
     if (this.serialPort) {
-      if ((lineNumber >= 0) && (lineNumber <= 23)) {
+      if ((lineNumber >= 0) && (lineNumber <= 31)) {
         if (this.isHex(hexColor))
           this.serialPort.write('C ' + hexColor + ' ' + lineNumber + '\n');
         else
           throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
       } else {
-        throw new Error(`Line number is out of scope! Lines permitted : 0-23`);
+        throw new Error(`Line number is out of scope! Lines permitted : 0-31`);
       }
     }
   }
@@ -145,18 +156,18 @@ export default class LedDisplay extends EventEmitter {
 
   lineGradient(lineNumber, hexColor1, hexColor2) {
     if (this.serialPort) {
-      if ((lineNumber >= 0) && (lineNumber <= 23)) {
+      if ((lineNumber >= 0) && (lineNumber <= 31)) {
         if ((isHex(hexColor1)) && (isHex(hexColor2)))
           this.serialPort.write('F ' + hexColor1 + ' ' + hexColor2 + ' ' + lineNumber + '\n');
         else
           throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
       } else {
-        throw new Error(`Line number is out of scope! Lines permitted : 0-23`);
+        throw new Error(`Line number is out of scope! Lines permitted : 0-31`);
       }
     }
   }
-  
-  
+
+
   clearPixels() {
     if (this.serialPort)
       this.serialPort.write('G\n');

@@ -8,6 +8,7 @@ export default {
    */
   'co-909': {
     numSteps: 16,
+    instrumentColors: ["#FF0000", "#00FF55", "#023EFF", "#FFFF00", "#D802FF", "#00FFF5", "#FF0279", "#FF9102"],
     playerInstruments: [{
       name: 'bass drum',
       low: 'sounds/co-909/909-BD-low.wav',

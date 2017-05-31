@@ -27,7 +27,7 @@ const int eyeCorrection[] = {  0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2,
 #define PIN            5
 
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS       96
+#define NUMPIXELS      128
 #define NUMSEGMENTS      8
 #define NUMPIXELSPERLINE 4
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
@@ -66,8 +66,8 @@ void onTheline(int n, int onL, int r, int g, int b) { // 0-23 possible n of line
 }
 
 void cluster(int n, int r, int g, int b) { // 0-7 possible n of segments
-  int start = n * 12;
-  for (int i = start; i < start + 12; i++) setLight(i, r, g, b);
+  int start = n * 16;
+  for (int i = start; i < start + 16; i++) setLight(i, r, g, b);
 }
 
 void circle(int n, int r, int g, int b) { // 0-3
