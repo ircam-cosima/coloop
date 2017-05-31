@@ -85,7 +85,6 @@ class Renderer extends soundworks.Canvas2dRenderer {
       ctx.ellipse(x0 + this.positionXArr[i], y0 - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
-      ctx.closePath();
     }
 
     ctx.restore();
@@ -116,16 +115,12 @@ export default class SceneCo909 {
     this.config = config;
 
     this.$viewElem = null;
-<<<<<<< HEAD
     this.instrument = null;
 
-=======
-    // INDEX DE CLIENT
->>>>>>> fa367388b324e5c88c1ea0279a8d08da71f8ced6
     this.clientIndex = soundworks.client.index;
     this.numSteps = config.numSteps;
     this.sequence = new Array(this.numSteps);
-    this.resetSequence();
+    this.clear();
 
     const canvasMin = Math.min(window.innerWidth, window.innerHeight);
     this.buttonRadius = canvasMin / 15;
@@ -133,7 +128,6 @@ export default class SceneCo909 {
     this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius);
     this.audioOutput = experience.audioOutput;
 
-    this.onClear = this.onClear.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
   }
@@ -158,7 +152,6 @@ export default class SceneCo909 {
 
     experience.surface.addListener('touchstart', this.onTouchStart);
     experience.metricScheduler.addMetronome(this.onMetroBeat, this.numSteps, this.numSteps);
-    experience.sharedParams.addParamListener('clear', this.onClear);
   }
 
   enter() {
@@ -180,11 +173,10 @@ export default class SceneCo909 {
     experience.view.removeRenderer(this.renderer);
     experience.surface.removeListener('touchstart', this.onTouchStart);
     experience.metricScheduler.removeMetronome(this.onMetroBeat);
-    experience.sharedParams.removeParamListener('clear', this.onClear);
-    this.resetSequence();
+    this.clear();
   }
 
-  resetSequence() {
+  clear() {
     for (let i = 0; i < this.sequence.length; i++)
       this.sequence[i] = 0;
   }
@@ -222,9 +214,5 @@ export default class SceneCo909 {
     }
 
     this.renderer.setHighlight(beat);
-  }
-
-  onClear() {
-    this.resetSequence();
   }
 }

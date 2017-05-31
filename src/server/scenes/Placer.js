@@ -55,39 +55,42 @@ export default class Placer {
 
   start(client, callback = function() {}) {
     const experience = this.experience;
+    const clientIndex = client.index;
 
-    this.callbacks[client.index] = callback;
+    this.callbacks[clientIndex] = callback;
 
     experience.receive(client, 'placerReady', () => this.onPlacerReady(client));
 
-    const blinker = new Blinker(experience, client.index);
+    const blinker = new Blinker(experience, clientIndex);
     blinker.start();
-    this.blinkers[client.index] = blinker;
+    this.blinkers[clientIndex] = blinker;
   }
 
   stop(client) {
-    const blinker = this.blinkers[client.index];
-    const callback = this.callbacks[client.index];
+    const experience = this.experience;
+    const clientIndex = client.index;
+    const blinker = this.blinkers[clientIndex];
+    const callback = this.callbacks[clientIndex];
 
     if (blinker) {
-      delete this.blinkers[client.index];
-
+      delete this.blinkers[clientIndex];
       blinker.stop();
     }
 
     if (callback) {
-      delete this.callbacks[client.index];
-
-      const experience = this.experience;
-      experience.stopReceiving(client, 'ready', this.onPlacerReady);
+      delete this.callbacks[clientIndex];
+      experience.stopReceiving(client, 'placerReady', this.onPlacerReady);
     }
   }
 
   onPlacerReady(client) {
-    const callback = this.callbacks[client.index];
+    const experience = this.experience;
+    const clientIndex = client.index;
+    const callback = this.callbacks[clientIndex];
 
     if(callback) {
       this.stop(client);
+      experience.broadcast('barrel', null, 'placerDone', clientIndex);
       callback();
     }
   }

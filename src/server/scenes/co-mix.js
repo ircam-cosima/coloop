@@ -1,8 +1,8 @@
 import Metronome from '../Metronome';
 import Placer from './Placer';
 
-const numBeats = 4;
-const numMeasures = 4;
+const numBeats = 32;
+const numMeasures = 1;
 
 export default class CoMix {
   constructor(experience, config) {
@@ -11,58 +11,60 @@ export default class CoMix {
 
     this.placer = new Placer(experience);
 
+    this.tracks = config.tracks;
     const numTracks = config.tracks.length;
     this.isPlacing = new Array(numTracks);
+    this.trackCutoffs = [0, 0, 0, 0, 0, 0, 0, 0];
+    this.trackLayers = [0, 0, 0, 0, 0, 0, 0, 0];
 
-    this.onTempoChange = this.onTempoChange.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onTrackCutoff = this.onTrackCutoff.bind(this);
-    this.onClear = this.onClear.bind(this);
+    this.onSwitchLayer = this.onSwitchLayer.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numBeats * numMeasures, numBeats, this.onMetroBeat);
   }
 
-  enter() {
-    const experience = this.experience;
-
-    experience.sharedParams.addParamListener('tempo', this.onTempoChange);
-    experience.sharedParams.addParamListener('clear', this.onClear);
-
-    this.metronome.start();
-
-    for (let client of experience.clients)
-      this.clientEnter(client);
-  }
-
-  exit() {
-    const experience = this.experience;
-
-    experience.sharedParams.removeParamListener('tempo', this.onTempoChange);
-    experience.sharedParams.removeParamListener('clear', this.onClear);
-
-    this.metronome.stop();
-
-    for (let client of experience.clients)
-      this.clientExit(client);
-
-    this.stopAllTracks();
-  }
-
   clientEnter(client) {
-    this.experience.receive(client, 'trackCutoff', this.onTrackCutoff);
+    const experience = this.experience;
+    const clientIndex = client.index;
 
-    this.isPlacing[client.index] = true;
+    experience.receive(client, 'trackCutoff', this.onTrackCutoff);
+    experience.receive(client, 'switchLayer', this.onSwitchLayer);
+
+    this.isPlacing[clientIndex] = true;
     this.placer.start(client, () => {
-      this.isPlacing[client.index] = false;
+      this.isPlacing[clientIndex] = false;
     });
   }
 
   clientExit(client) {
-    this.stopTrack(client.index);
-    this.experience.stopReceiving(client, 'trackCutoff', this.onTrackCutoff);
+    const experience = this.experience;
+    const clientIndex = client.index;
 
-    this.placer.stop(client);
-    this.isPlacing[client.index] = false;
+    this.stopTrack(clientIndex);
+    experience.stopReceiving(client, 'trackCutoff', this.onTrackCutoff);
+    experience.stopReceiving(client, 'switchLayer', this.onSwitchLayer);
+
+    if (this.isPlacing[clientIndex]) {
+      this.placer.stop(client);
+      this.isPlacing[clientIndex] = false;
+    }
+  }
+
+  enter() {
+    const experience = this.experience;
+    experience.sharedParams.update('tempo', this.config.tempo);
+    experience.sharedParams.removeParamListener('tempo', experience.onTempoChange);
+
+    this.metronome.start();
+  }
+
+  exit() {    
+    this.metronome.stop();
+    
+    const experience = this.experience;
+    experience.sharedParams.update('tempo', this.config.tempo);
+    experience.sharedParams.addParamListener('tempo', experience.onTempoChange);
   }
 
   stopTrack(step) {
@@ -74,19 +76,23 @@ export default class CoMix {
       this.stopTrack(i);
   }
 
-  onTempoChange(tempo) {
-
-  }
-
   onMetroBeat(measure, beat) {
-
+    // control LEDs turning around for each measure ???
+    // could also use trackCutoffs and/or trackLayers of the 8 tracks (this.tracks.length = 8)
+    console.log(beat);
   }
 
   onTrackCutoff(track, value) {
+    this.trackCutoffs[track] = value;
+
+    const experience = this.experience;
     experience.broadcast('barrel', null, 'trackCutoff', track, value);
   }
 
-  onClear() {
+  onSwitchLayer(track, value) {
+    this.trackLayers[track] = value;
 
+    const experience = this.experience;
+    experience.broadcast('barrel', null, 'switchLayer', track, value);
   }
 }

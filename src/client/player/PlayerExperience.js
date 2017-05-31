@@ -43,6 +43,7 @@ export default class PlayerExperience extends soundworks.Experience {
     this.surface = null;
 
     this.onSceneChange = this.onSceneChange.bind(this);
+    this.onClear = this.onClear.bind(this);
   }
 
   start() {
@@ -65,6 +66,7 @@ export default class PlayerExperience extends soundworks.Experience {
       this.currentScene.enter();
 
       this.sharedParams.addParamListener('scene', this.onSceneChange);
+      this.sharedParams.addParamListener('clear', this.onClear);
       this.sharedParams.addParamListener('reload', this.onReload);
     });
   }
@@ -97,6 +99,13 @@ export default class PlayerExperience extends soundworks.Experience {
     this.currentScene.exit();
     this.currentScene = this.scenes[value];
     this.currentScene.enter();
+  }
+
+  onClear() {
+    const clearScene = this.currentScene.clear;
+
+    if(clearScene)
+      clearScene();
   }
 
   onReload(value) {

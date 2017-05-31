@@ -1,55 +1,107 @@
 import * as soundworks from 'soundworks/client';
 import Placer from './Placer';
+import LoopPlayer from '../../shared/LoopPlayer';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
+function clip(value) {
+  return Math.max(0, Math.min(1, value));
+}
+
+const numDiv = 1024;
+
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(track, loopDuration) {
+  constructor(layer, measureDuration) {
     super(0);
 
-    this.loopDuration = loopDuration;
-    this.loopTime = 0;
-    this.state = 0;
-    this.track = track;
+    this.measureDuration = measureDuration;
+    this.layer = layer;
+    this.layerIndex = 0;
+    this.layerPending = false;
+    this.measureStartTime = 0;
+    this.measurePhase = 0;
   }
 
-  init() {}
+  init() {
+    const canvasMin = Math.min(this.canvasWidth, this.canvasHeight);
+    this.ringRadius = canvasMin / 3;
+    this.innerRadius = 5 * canvasMin / 24 - 10;
+    this.width = Math.PI / 128;
+    this.lineWidth = canvasMin / 4;
+  }
+
+  setLayerIndex(index) {
+    this.layerIndex = index;
+    this.layerPending = true;
+  }
+
+  setMeasure(audioTime, layer, measureCount) {
+    this.layer = layer;
+    this.layerPending = false;
+    this.measureStartTime = audioTime;
+    this.loopMeasure = measureCount % layer.length;
+    this.measurePhase = 0;
+  }
 
   update(dt) {}
 
   render(ctx) {
-    const loopTime = this.loopTime;
+    const measureStartTime = this.measureStartTime;
 
-    if (loopTime > 0) {
+    if (measureStartTime > 0) {
+      const layer = this.layer;
       const x0 = this.canvasWidth / 2;
       const y0 = this.canvasHeight / 2;
-      const canvasMin = Math.min(this.canvasWidth, this.canvasHeight);
-      const radius = canvasMin / 4;
+      const ringRadius = this.ringRadius;
+      const innerRadius = this.innerRadius;
+      const width = this.width;
+      const measureDuration = this.measureDuration;
+      const loopMeasure = this.loopMeasure;
+      const lastDiv = Math.floor(numDiv * this.measurePhase + 0.5);
       const time = audioScheduler.currentTime;
-      const angle = (360 * (time - loopTime) / loopDuration) % 360;
-      const angleWidth = 10;
+      const loopDuration = measureDuration * layer.length;
+      const measurePhase = ((time - measureStartTime) % measureDuration) / measureDuration;
+      let div = Math.floor(numDiv * measurePhase + 0.5);
+
+      if (div < lastDiv)
+        div += numDiv;
 
       ctx.save();
-      ctx.beginPath();
-      ctx.globalAlpha = 1;
-      ctx.lineWidth = canvasMin / 6;
 
-      switch (state) {
-        case 0:
-          ctx.strokeStyle = "#ffffff";
-          break;
+      for (let d = lastDiv; d < div; d++) {
+        const phi = (d % numDiv) / numDiv;
+        const angle = 2 * Math.PI * (phi - 0.25);
+        const loopPhase = (loopMeasure + phi) / layer.length;
+        const intensityIndex = Math.floor(loopPhase * layer.intensity.length + 0.5);
+        const intensityInDb = layer.intensity[intensityIndex] + 36;
+        const intensity = clip(Math.exp(0.3 * intensityInDb));
 
-        case 1:
-          ctx.strokeStyle = "#ffffff";
-          break;
+        ctx.strokeStyle = layer.color || '#ffffff';
+
+        ctx.globalAlpha = intensity;
+        ctx.lineWidth = this.lineWidth;
+
+        ctx.beginPath();
+        ctx.arc(x0, y0, ringRadius, angle - width, angle + width);
+        ctx.stroke();
       }
 
-      ctx.arc(x0, y0, radius, angle - angleWidth, angle + angleWidth);
-      ctx.fill();
-      ctx.stroke();
-      ctx.closePath();
+      ctx.globalAlpha = 0.05;
+
+      if(this.layerPending) {
+        ctx.fillStyle = layer.color || '#ffffff';
+      } else {
+        ctx.fillStyle = '#000000';
+      }
+
+        ctx.beginPath();
+        ctx.arc(x0, y0, innerRadius, 0, 2 * Math.PI);
+        ctx.fill();
+
       ctx.restore();
+
+      this.measurePhase = measurePhase;
     }
   }
 }
@@ -75,23 +127,23 @@ export default class SceneCoMix {
     this.$viewElem = null;
     this.clientIndex = soundworks.client.index;
     this.track = null;
+    this.layerIndex = 0;
 
     const tempo = config.tempo;
     const tempoUnit = config.tempoUnit;
-    const numBeats = config.numBeats;
-    const beatDuration = 60 / tempo;
-    const loopDuration = numBeats * beatDuration;
+    this.measureDuration = 60 / (tempo * tempoUnit);
+
     const trackConfig = config.tracks[this.clientIndex];
-    this.renderer = new Renderer(trackConfig, 0, loopDuration);
+    this.renderer = new Renderer(trackConfig, this.measureDuration);
+
     this.intensity = trackConfig.intensity;
     this.audioOutput = experience.audioOutput;
 
     this.lastTrackCutoff = -Infinity;
 
-    this.onClear = this.onClear.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onMotionInput = this.onMotionInput.bind(this);
-    this.onMetroBeat = this.onMetroBeat.bind(this);
+    this.onMeasureStart = this.onMeasureStart.bind(this);
   }
 
   startPlacer() {
@@ -104,13 +156,21 @@ export default class SceneCoMix {
 
     this.$viewElem = experience.view.$el;
 
+    if (!this.loopPlayer) {
+      const config = this.config;
+      this.loopPlayer = new LoopPlayer(experience.metricScheduler, [this.audioOutput], 1, config.tempo, config.tempoUnit, 0.05, this.onMeasureStart);
+    }
+
+    this.loopPlayer.addLoopTrack(0, this.track.layers);
+    this.renderer.setMeasure(0, 0);
+
     experience.view.model = {};
     experience.view.template = template;
     experience.view.render();
     experience.view.addRenderer(this.renderer);
     experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
       ctx.save();
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = 0.05;
       ctx.fillStyle = '#000000';
       ctx.rect(0, 0, canvasWidth, canvasHeight);
       ctx.fill();
@@ -118,10 +178,7 @@ export default class SceneCoMix {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.addMetronome(this.onMetroBeat, 4, 1, 1); // tick on every measure for 4 measures
-    experience.sharedParams.addParamListener('clear', this.onClear);
-
-    this.motionInput.addListener('accelerationIncludingGravity', this.onMotionInput);
+    experience.motionInput.addListener('accelerationIncludingGravity', this.onMotionInput);
   }
 
   enter() {
@@ -130,16 +187,15 @@ export default class SceneCoMix {
     if (this.notes) {
       this.startPlacer();
     } else {
-      const trackConfig = config.tracks[this.clientIndex];
+      const trackConfig = this.config.tracks[this.clientIndex];
       experience.audioBufferManager.loadFiles(trackConfig).then((track) => {
-        this.tracks = tracks;
+        this.track = track;
         this.startPlacer();
       });
     }
   }
 
   exit() {
-    this.stopTrack();
     this.placer.stop();
 
     if (this.$viewElem) {
@@ -148,39 +204,23 @@ export default class SceneCoMix {
       const experience = this.experience;
       experience.view.removeRenderer(this.renderer);
       experience.surface.removeListener('touchstart', this.onTouchStart);
-      experience.metricScheduler.removeMetronome(this.onMetroBeat);
-      experience.sharedParams.removeParamListener('clear', this.onClear);
+      experience.motionInput.removeListener('accelerationIncludingGravity', this.onMotionInput);
     }
-  }
 
-  resetStates() {
-    for (let i = 0; i < this.states.length; i++)
-      this.states[i] = 0;
+    if (this.loopPlayer)
+      this.loopPlayer.removeLoopTrack(0);
   }
 
   onTouchStart(id, normX, normY) {
     const experience = this.experience;
-    const numStates = this.states.length;
-    const note = numStates - 1 - Math.floor(normY * numStates);
-    const noteClass = this.notes[note].class;
-    const state = (this.states[note] + 1) % 2;
-    const actives = this.actives[noteClass];
+  
+    const numLayers = this.track.layers.length;
+    const layerIndex = (this.layerIndex + 1) % numLayers;
 
-    if (state > 0) {
-      actives.push(note);
-
-      if (actives.length > maxActives[noteClass]) {
-        const offNote = actives.shift();
-        this.states[offNote] = 0;
-        experience.send('switchNote', this.clientIndex, offNote, 0);
-      }
-    } else {
-      const idx = actives.indexOf(note);
-      actives.splice(idx, 1);
-    }
-
-    this.states[note] = state;
-    experience.send('switchNote', this.clientIndex, note, state);
+    this.layerIndex = layerIndex;
+    this.loopPlayer.setLayer(0, layerIndex);
+    this.renderer.setLayerIndex(layerIndex);
+    experience.send('switchLayer', this.clientIndex, layerIndex);
   }
 
   onMotionInput(data) {
@@ -192,20 +232,17 @@ export default class SceneCoMix {
     const cutoff = 0.5 + Math.max(-0.8, Math.min(0.8, (accZ / 9.81))) / 1.6;
 
     if (Math.abs(cutoff - this.lastTrackCutoff) > 0.01) {
+      const experience = this.experience;
+
       this.lastTrackCutoff = cutoff;
+      this.loopPlayer.setCutoff(0, cutoff);
 
-      //this.loopPlayer.setCutoff(this.playerId, cutoff);
-
-      this.send('trackCutoff', this.clientIndex, cutoff);
+      experience.send('trackCutoff', this.clientIndex, cutoff);
     }
   }
 
-  onMetroBeat(measure, beat) {
-    const time = audioScheduler.currentTime;
-    this.renderer.loopTime = time;
-  }
-
-  onClear() {
-
+  onMeasureStart(audioTime, measureCount) {
+    const layer = this.track.layers[this.layerIndex];
+    this.renderer.setMeasure(audioTime, layer, measureCount);
   }
 }

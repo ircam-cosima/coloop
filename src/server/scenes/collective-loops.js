@@ -19,55 +19,43 @@ export default class SceneCollectiveLoops {
       this.resetStepStates(i);
     }
 
-    this.onTempoChange = this.onTempoChange.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onSwitchNote = this.onSwitchNote.bind(this);
-    this.onClear = this.onClear.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
   }
 
-  enter() {
-    const experience = this.experience;
-
-    experience.sharedParams.addParamListener('tempo', this.onTempoChange);
-    experience.sharedParams.addParamListener('clear', this.onClear);
-
-    this.metronome.start();
-
-    for (let client of experience.clients)
-      this.clientEnter(client);
-  }
-
-  exit() {
-    const experience = this.experience;
-
-    experience.sharedParams.removeParamListener('tempo', this.onTempoChange);
-    experience.sharedParams.removeParamListener('clear', this.onClear);
-
-    this.metronome.stop();
-
-    for (let client of experience.clients)
-      this.clientExit(client);
-
-    this.resetAllStepStates();
-  }
-
   clientEnter(client) {
-    this.experience.receive(client, 'switchNote', this.onSwitchNote);
+    const experience = this.experience;
+    const clientIndex = client.index;
 
-    this.isPlacing[client.index] = true;
+    experience.receive(client, 'switchNote', this.onSwitchNote);
+
+    this.isPlacing[clientIndex] = true;
     this.placer.start(client, () => {
-      this.isPlacing[client.index] = false;
+      this.isPlacing[clientIndex] = false;
     });
   }
 
   clientExit(client) {
-    this.resetStepStates(client.index);
+    const experience = this.experience;
+    const clientIndex = client.index;
+
+    this.resetStepStates(clientIndex);
     this.experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
 
-    this.placer.stop(client);
-    this.isPlacing[client.index] = false;
+    if(this.isPlacing[clientIndex]) {
+      this.placer.stop(client);
+      this.isPlacing[clientIndex] = false;
+    }
+  }
+
+  enter() {
+    this.metronome.start();
+  }
+
+  exit() {
+    this.metronome.stop();
   }
 
   resetStepStates(step) {
@@ -88,11 +76,15 @@ export default class SceneCollectiveLoops {
     states[note] = state;
   }
 
-  onTempoChange(tempo) {
+  setTempo(tempo) {
     if (this.metronome.master) {
       this.metronome.stop();
       this.metronome.start();
     }
+  }
+
+  clear() {
+    this.resetAllStepStates();    
   }
 
   onMetroBeat(measure, beat) {
@@ -129,9 +121,5 @@ export default class SceneCollectiveLoops {
     const experience = this.experience;
     experience.broadcast('barrel', null, 'switchNote', step, note, state);
     this.setNoteState(step, note, state);
-  }
-
-  onClear() {
-    this.resetAllStepStates();
   }
 }

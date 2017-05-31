@@ -1,7 +1,8 @@
 import * as soundworks from 'soundworks/client';
+import Placer from './Placer';
+import LoopPlayer from '../../shared/LoopPlayer';
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
-import LoopPlayer from '../../shared/LoopPlayer';
 
 export default class SceneCoMix {
   constructor(experience, config) {
@@ -12,68 +13,78 @@ export default class SceneCoMix {
     const numTracks = config.tracks.length;
     this.outputBusses = experience.outputBusses;
 
+    this.placer = new Placer(experience);
     this.loopPlayer = null;
 
-    this.onConnectClient = this.onDisconnectClient.bind(this);
-    this.onDisconnectClient = this.onDisconnectClient.bind(this);
     this.onTrackCutoff = this.onTrackCutoff.bind(this);
-    this.onClear = this.onClear.bind(this);
+    this.onSwitchLayer = this.onSwitchLayer.bind(this);
+  }
+
+  clientEnter(index) {
+    const experience = this.experience;
+
+    this.placer.start(index, () => {
+      const loopPlayer = this.loopPlayer;
+
+      if (loopPlayer) {
+        const track = this.tracks[index];
+        loopPlayer.addLoopTrack(index, track.layers);
+      }
+    });
+  }
+
+  clientExit(index) {
+    const loopPlayer = this.loopPlayer;
+
+    if (loopPlayer)
+      loopPlayer.removeLoopTrack(index);
   }
 
   enterScene() {
     const experience = this.experience;
-    experience.receive('disconnectClient', this.onDisconnectClient);
     experience.receive('trackCutoff', this.onTrackCutoff);
-    experience.sharedParams.addParamListener('clear', this.onClear);
+    experience.receive('switchLayer', this.onSwitchLayer);
 
-    if(!this.loopPlayer)
-      this.loopPlayer = new LoopPlayer(experience.metricScheduler, this.outputBusses, 1, config.tempo, config.tempoUnit, config.numBeats, 0.05);
-
-    this.loopPlayer.addLoopTrack();
+    if (!this.loopPlayer) {
+      const config = this.config;
+      this.loopPlayer = new LoopPlayer(experience.metricScheduler, this.outputBusses, 1, config.tempo, config.tempoUnit, 0.05);
+    }
   }
 
   enter() {
     const experience = this.experience;
 
-    if(this.notes) {
+    if (this.notes) {
       this.enterScene();
     } else {
       const trackConfig = this.config.tracks;
       experience.audioBufferManager.loadFiles(trackConfig).then((tracks) => {
         this.tracks = tracks;
-        this.enterScene();        
+        this.enterScene();
       });
     }
   }
 
   exit() {
     const experience = this.experience;
-    experience.stopReceiving('disconnectClient', this.onDisconnectClient);
     experience.stopReceiving('trackCutoff', this.onTrackCutoff);
-    experience.sharedParams.removeParamListener('clear', this.onClear);
+    experience.stopReceiving('switchLayer', this.onSwitchLayer);
 
+    this.placer.clear();
     this.loopPlayer.stopAllTracks();
-  }
-
-  onConnectClient(index) {
-    this.loopPlayer.addLoopTrack(index, loop);
-  }
-
-  onDisconnectClient(index) {
-    const loopPlayer = this.loopPlayer;
-
-    if(loopPlayer)
-      loopPLayer.removeLoopTrack(index);
   }
 
   onTrackCutoff(index, value) {
     const loopPlayer = this.loopPlayer;
 
-    if(loopPlayer)
-      loopPLayer.setCutoff(index, value);
+    if (loopPlayer)
+      loopPlayer.setCutoff(index, value);
   }
 
-  onClear() {
+  onSwitchLayer(index, value) {
+    const loopPlayer = this.loopPlayer;
 
+    if (loopPlayer)
+      loopPlayer.setLayer(index, value);
   }
 }

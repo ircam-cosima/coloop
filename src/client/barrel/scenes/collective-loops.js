@@ -22,8 +22,12 @@ export default class SceneCollectiveLoops {
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onSwitchNote = this.onSwitchNote.bind(this);
-    this.onDisconnectClient = this.onDisconnectClient.bind(this);
-    this.onClear = this.onClear.bind(this);
+  }
+
+  clientEnter(index) {}
+
+  clientExit(index) {
+    this.resetStepStates(index);
   }
 
   enterScene() {
@@ -31,20 +35,18 @@ export default class SceneCollectiveLoops {
     const numSteps = this.stepStates.length;
     experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
     experience.receive('switchNote', this.onSwitchNote);
-    experience.receive('disconnectClient', this.onDisconnectClient);
-    experience.sharedParams.addParamListener('clear', this.onClear);    
   }
 
   enter() {
     const experience = this.experience;
 
-    if(this.notes) {
+    if (this.notes) {
       this.enterScene();
     } else {
       const noteConfig = this.config.barrelNotes;
       experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
         this.notes = notes;
-        this.enterScene();        
+        this.enterScene();
       });
     }
   }
@@ -53,8 +55,6 @@ export default class SceneCollectiveLoops {
     const experience = this.experience;
     experience.metricScheduler.removeMetronome(this.onMetroBeat);
     experience.stopReceiving('switchNote', this.onSwitchNote);
-    experience.stopReceiving('disconnectClient', this.onDisconnectClient);
-    experience.sharedParams.removeParamListener('clear', this.onClear());
   }
 
   resetStepStates(step) {
@@ -63,6 +63,11 @@ export default class SceneCollectiveLoops {
     for (let i = 0; i < states.length; i++) {
       states[i] = 0;
     }
+  }
+
+  clear() {
+    for (let i = 0; i < this.stepStates.length; i++)
+      this.resetStepStates(i);
   }
 
   onMetroBeat(measure, beat) {
@@ -91,14 +96,5 @@ export default class SceneCollectiveLoops {
   onSwitchNote(step, note, state) {
     const states = this.stepStates[step];
     states[note] = state;
-  }
-
-  onDisconnectClient(step) {
-    this.resetStepStates(step);
-  }
-
-  onClear() {
-    for (let i = 0; i < this.stepStates.length; i++)
-      this.resetStepStates(i);
   }
 }

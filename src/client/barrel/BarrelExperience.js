@@ -24,7 +24,7 @@ const template = `
 `;
 
 const numOutputChannels = 8; // "virtual" output channels
-const numAudioOutputs = 4; // "physical" audio outputs
+const numAudioOutputs = 2; // "physical" audio outputs
 
 export default class BarrelExperience extends soundworks.Experience {
   constructor(assetsDomain) {
@@ -38,6 +38,8 @@ export default class BarrelExperience extends soundworks.Experience {
     this.scenes = {};
     this.currentScene = null;
 
+    this.clients = new Set();
+
     this.outputBusses = new Array(numOutputChannels); // output channels (array of gain nodes)
     this.crossFilters = new Array(numOutputChannels); // channel cross-over filters (array of biquad filter nodes)
     this.wooferBuss = null; // bass woofer gain node
@@ -45,6 +47,9 @@ export default class BarrelExperience extends soundworks.Experience {
     this.delay = 0.02;
 
     this.onSceneChange = this.onSceneChange.bind(this);
+    this.onConnectClient = this.onConnectClient.bind(this);
+    this.onDisconnectClient = this.onDisconnectClient.bind(this);
+    this.onClear = this.onClear.bind(this);
   }
 
   start() {
@@ -54,10 +59,13 @@ export default class BarrelExperience extends soundworks.Experience {
     this.show();
 
     this.initScenes();
-    this.currentScene.enter();
 
     this.initAudio(numAudioOutputs); // init audio outputs for an interface of the given number of channels
     this.initParams();
+
+    this.receive('connectClient', this.onConnectClient);
+    this.receive('disconnectClient', this.onDisconnectClient);
+    this.sharedParams.addParamListener('clear', this.onClear);
   }
 
   initAudio(numAudioOutputs = 2) {
@@ -143,6 +151,7 @@ export default class BarrelExperience extends soundworks.Experience {
     }
 
     this.currentScene = this.scenes.off;
+    this.enterCurrentScene();
   }
 
   setOutputGain(index, value) {
@@ -162,9 +171,40 @@ export default class BarrelExperience extends soundworks.Experience {
     this.delay = value;
   }
 
-  onSceneChange(value) {
-    this.currentScene.exit();
-    this.currentScene = this.scenes[value];
+  enterCurrentScene() {
     this.currentScene.enter();
+
+    for (let client of this.clients)
+      this.currentScene.clientEnter(client);    
+  }
+
+  exitCurrentScene() {
+    this.currentScene.exit();
+
+    for (let client of this.clients)
+      this.currentScene.clientExit(client);    
+  }
+
+  onSceneChange(value) {
+    this.exitCurrentScene();
+    this.currentScene = this.scenes[value];
+    this.enterCurrentScene();
+  }
+
+  onConnectClient(index) {
+    this.clients.add(index);
+    this.currentScene.clientEnter(index);
+  }
+
+  onDisconnectClient(index) {
+    this.clients.delete(index);
+    this.currentScene.clientExit(index);
+  }
+
+  onClear(index) {
+    const clearScene = this.currentScene.clear;
+
+    if(clearScene)
+      clearScene(index);
   }
 }

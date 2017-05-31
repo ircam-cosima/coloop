@@ -56,7 +56,6 @@ class Renderer extends soundworks.Canvas2dRenderer {
     ctx.fillStyle = this.state ? this.color : '#000000';
     ctx.rect(0, 0, this.canvasWidth, this.canvasHeight);
     ctx.fill();
-    ctx.closePath();
     ctx.restore();
   }
 
@@ -117,7 +116,10 @@ export default class Placer {
   onTouchStart(id, normX, normY) {
     const callback = this.callback;
     this.stop();
-    this.experience.send('placerReady');
+
+    const experience = this.experience;
+    experience.send('placerReady');
+
     callback();
   }
 }

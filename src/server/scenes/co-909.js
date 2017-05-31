@@ -1,4 +1,3 @@
-
 import Metronome from '../Metronome';
 
 export default class SceneCo909 {
@@ -18,10 +17,8 @@ export default class SceneCo909 {
 
     this.primaryColors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
 
-    this.onTempoChange = this.onTempoChange.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onSwitchNote = this.onSwitchNote.bind(this);
-    this.onClear = this.onClear.bind(this);
 
     // display
     this.onButtonTurned = this.onButtonTurned.bind(this);
@@ -29,43 +26,33 @@ export default class SceneCo909 {
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
   }
 
-  enter() {
-    const experience = this.experience;
-    this.experience.sharedParams.addParamListener('tempo', this.onTempoChange);
-    experience.ledDisplay.addListener('buttonTurned', this.onButtonTurned);
-
-    this.metronome.start();
-
-    for (let client of experience.clients)
-      this.clientEnter(client);
-  }
-
-  exit() {
-    const experience = this.experience;
-    this.experience.sharedParams.removeParamListener('tempo', this.onTempoChange);
-    experience.ledDisplay.removeListener('buttonTurned', this.onButtonTurned);
-
-    this.metronome.stop();
-
-    for (let client of experience.clients)
-      this.clientExit(client);
-
-    this.resetAllInstrumentSequences();
-  }
-
   clientEnter(client) {
     const experience = this.experience;
+
     experience.receive(client, 'switchNote', this.onSwitchNote);
-    experience.sharedParams.addParamListener('clear', this.onClear);
   }
 
   clientExit(client) {
+    const experience = this.experience;
+
     // reset sequence of exiting client
     this.resetInstrumentSequence(client.index);
 
-    const experience = this.experience;
     experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
-    experience.sharedParams.removeParamListener('clear', this.onClear);
+  }
+
+  enter() {
+    const experience = this.experience;
+    experience.ledDisplay.addListener('buttonTurned', this.onButtonTurned);
+
+    this.metronome.start();
+}
+
+  exit() {
+    const experience = this.experience;
+    experience.ledDisplay.removeListener('buttonTurned', this.onButtonTurned);
+
+    this.metronome.stop();
   }
 
   resetInstrumentSequence(instrument) {
@@ -87,16 +74,20 @@ export default class SceneCo909 {
 
   }
 
-  onTempoChange(tempo) {
+  setTempo(tempo) {
     if (this.metronome.master) {
       this.metronome.stop();
       this.metronome.start();
     }
   }
 
+  clear() {
+    this.resetAllInstrumentSequences();
+  }
+
   onMetroBeat(measure, beat) {
-    const instrumentSequences = this.instrumentSequences;
     const experience = this.experience;
+    const instrumentSequences = this.instrumentSequences;
 
 
     let displaySelector = Math.round((24.0 / 16.0) * beat);
@@ -159,10 +150,6 @@ export default class SceneCo909 {
     const experience = this.experience;
     experience.broadcast('barrel', null, 'switchNote', instrument, beat, state);
     this.setNoteState(instrument, beat, state);
-  }
-
-  onClear() {
-    this.resetAllInstrumentSequences();
   }
 
   onButtonTurned(data) {
