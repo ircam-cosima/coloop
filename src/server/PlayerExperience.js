@@ -23,7 +23,7 @@ export default class PlayerExperience extends Experience {
     this.checkin = this.require('checkin');
     this.audioBufferManager = this.require('audio-buffer-manager');
     this.syncScheduler = this.require('sync-scheduler');
-    this.metricScheduler = this.require('metric-scheduler', { tempo: 120, tempoUnit: 1/4 });
+    this.metricScheduler = this.require('metric-scheduler', { tempo: 120, tempoUnit: 1 / 4 });
     this.sync = this.require('sync');
 
     this.scheduler = null;
@@ -40,7 +40,8 @@ export default class PlayerExperience extends Experience {
 
     this.ledDisplay = new LedDisplay();
     this.ledDisplay.connect(null, () => {
-    //this.ledDisplay.connect('/dev/tty.wchusbserial1420', () => {
+      // null means automatic port search, otherwise put something like : /dev/tty.wchusbserial1420
+
       this.ledDisplay.addListener('temperature', this.onTemperature);
       this.ledDisplay.requestTemperature();
     });
@@ -88,7 +89,7 @@ export default class PlayerExperience extends Experience {
     const syncTime = this.metricScheduler.syncTime;
     const metricPosition = this.metricScheduler.getMetricPositionAtSyncTime(syncTime);
 
-    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1/4, 'tempoChange');
+    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1 / 4, 'tempoChange');
   }
 
   onSceneChange(value) {

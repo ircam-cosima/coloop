@@ -135,7 +135,14 @@ export default class SceneCo909 {
       for (let i = 0; i < sequence.length; i++) {
         if ((sequence[i] === 1) || (sequence[i] === 2)) {
           let ds = Math.round((32.0 / 16.0) * i);
-          experience.ledDisplay.ledOnLine(ds, inst % 4, this.primaryColors[inst]);
+          if (inst <= 3) {
+            experience.ledDisplay.ledOnLine(ds, inst % 4, this.primaryColors[inst]);
+          } else {
+            if (ds <= 31)
+              experience.ledDisplay.ledOnLine(ds + 1, inst % 4, this.primaryColors[inst]);
+            else
+              experience.ledDisplay.ledOnLine(0, inst % 4, this.primaryColors[inst]);
+          }
         }
       }
     }
