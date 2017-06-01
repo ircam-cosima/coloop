@@ -1,5 +1,7 @@
 import Metronome from '../Metronome';
 import Placer from './Placer';
+import colorConfig from '../../shared/color-config';
+const playerColors = colorConfig.players;
 
 const numBeats = 32;
 const numMeasures = 1;
@@ -59,9 +61,9 @@ export default class CoMix {
     this.metronome.start();
   }
 
-  exit() {    
+  exit() {
     this.metronome.stop();
-    
+
     const experience = this.experience;
     experience.sharedParams.update('tempo', this.config.tempo);
     experience.enableTempoChange(true);
@@ -77,6 +79,16 @@ export default class CoMix {
   }
 
   onMetroBeat(measure, beat) {
+    const numTracks = this.tracks.length;
+
+    // control LED display
+    for (let i = 0; i < numBeats; i++) {
+      const isPlacing = this.isPlacing[i];
+
+      if (isPlacing)
+        this.placer.setBlinkState(i, beat > numBeats / 2);
+    }
+
     // control LEDs turning around for each measure ???
     // could also use trackCutoffs and/or trackLayers of the 8 tracks (this.tracks.length = 8)
     console.log(beat);

@@ -1,10 +1,10 @@
 import * as soundworks from 'soundworks/client';
 import Placer from './Placer';
+import colorConfig from '../../../shared/color-config';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
-
-const primaryColors = ["#FF0000", "#00FF55", "#023EFF", "#FFFF00", "#D802FF", "#00FFF5", "#FF0279", "#FF9102"];
+const playerColors = colorConfig.players;
 
 function radToDegrees(radians) {
   return radians * 180 / Math.PI;
@@ -28,7 +28,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
     this.blinkDuration = 30 / 120; // duration of 8th beat
   }
 
-  init() {}
+  init() { }
 
   hexToRgbA(hex, alpha) {
     let c;
@@ -47,8 +47,8 @@ class Renderer extends soundworks.Canvas2dRenderer {
     this.blinkTime = undefined;
   }
 
-  update(dt) {
-    if (this.blinkTime !== undefined)
+  update(dt) { 
+    if(this.blinkTime !== undefined)
       this.blinkTime += dt;
     else
       this.blinkTime = 0;
@@ -71,7 +71,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
 
       ctx.beginPath();
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = primaryColors[this.myindex];
+      ctx.strokeStyle = playerColors[this.myindex];
 
       switch (note.class) {
         case 'perc':
@@ -147,8 +147,6 @@ export default class SceneCollectiveLoops {
       'melody': [],
     };
 
-    this.isPlacing = false;
-
     this.renderer = new Renderer(this.states, config.playerNotes, this.clientIndex);
     this.audioOutput = experience.audioOutput;
 
@@ -157,19 +155,12 @@ export default class SceneCollectiveLoops {
   }
 
   startPlacer() {
-    const experience = this.experience;
-    const numSteps = this.config.numSteps;
-    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
-
-    this.isPlacing = true;
-    this.placer.start(() => {
-      this.isPlacing = false;
-      this.startScene();
-    });
+    this.placer.start(() => this.startScene());
   }
 
   startScene() {
     const experience = this.experience;
+    const numSteps = this.config.numSteps;
 
     this.$viewElem = experience.view.$el;
 
@@ -177,7 +168,7 @@ export default class SceneCollectiveLoops {
     experience.view.template = template;
     experience.view.render();
     experience.view.addRenderer(this.renderer);
-    experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
+    experience.view.setPreRender(function (ctx, dt, canvasWidth, canvasHeight) {
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#000000';
@@ -187,6 +178,7 @@ export default class SceneCollectiveLoops {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1, 1, this.clientIndex / numSteps);
   }
 
   enter() {
@@ -222,10 +214,6 @@ export default class SceneCollectiveLoops {
       this.states[i] = 0;
   }
 
-  setTempo(value) {
-    this.renderer.blinkDuration = 30 / value; // duration of 8th beat
-  }
-
   onTouchStart(id, x, y) {
     const experience = this.experience;
     const numStates = this.states.length;
@@ -254,29 +242,25 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
-    if (this.isPlacing) {
-      this.placer.setBlinkState(((beat / 2) % 2) === 0);
-    } else if (beat === this.clientIndex) {
-      const time = audioScheduler.currentTime;
-      const states = this.states;
-      const notes = this.notes;
+    const time = audioScheduler.currentTime;
+    const states = this.states;
+    const notes = this.notes;
 
-      this.renderer.triggerBlink(this.beatDuration);
+    this.renderer.triggerBlink(this.beatDuration);
 
-      for (let i = 0; i < this.states.length; i++) {
-        const state = states[i];
-        const note = notes[i];
+    for (let i = 0; i < this.states.length; i++) {
+      const state = states[i];
+      const note = notes[i];
 
-        if (state > 0) {
-          const gain = audioContext.createGain();
-          gain.connect(this.audioOutput);
-          gain.gain.value = note.gain;
+      if (state > 0) {
+        const gain = audioContext.createGain();
+        gain.connect(this.audioOutput);
+        gain.gain.value = note.gain;
 
-          const src = audioContext.createBufferSource();
-          src.connect(gain);
-          src.buffer = note.buffer;
-          src.start(time);
-        }
+        const src = audioContext.createBufferSource();
+        src.connect(gain);
+        src.buffer = note.buffer;
+        src.start(time);
       }
     }
   }

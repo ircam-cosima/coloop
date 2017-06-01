@@ -1,5 +1,4 @@
 import * as soundworks from 'soundworks/client';
-import placerConfig from '../../../shared/placer-config';
 
 export default class Placer {
   constructor(experience) {

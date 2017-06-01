@@ -1,5 +1,5 @@
 import * as soundworks from 'soundworks/client';
-import placerConfig from '../../../shared/placer-config';
+import colorConfig from '../../../shared/color-config';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const TimeEngine = soundworks.audio.TimeEngine;
@@ -9,7 +9,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
     super(0);
 
     this.blinkState = false;
-    this.color = placerConfig[client.index].color;
+    this.color = colorConfig.players[client.index];
   }
 
   init() {}
@@ -51,6 +51,7 @@ export default class Placer {
     this.audioOutput = experience.audioOutput;
 
     this.onTouchStart = this.onTouchStart.bind(this);
+    this.onMetroBeat = this.onMetroBeat.bind(this);
   }
 
   start(callback) {
@@ -63,6 +64,7 @@ export default class Placer {
 
     experience.view.addRenderer(this.renderer);
     experience.surface.addListener('touchstart', this.onTouchStart);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, 2, 2);
   }
 
   stop() {
@@ -72,11 +74,8 @@ export default class Placer {
       const experience = this.experience;
       experience.view.removeRenderer(this.renderer);
       experience.surface.removeListener('touchstart', this.onTouchStart);
+      experience.metricScheduler.removeMetronome(this.onMetroBeat);
     }
-  }
-
-  setBlinkState(state) {
-    this.renderer.setBlinkState(state);
   }
 
   onTouchStart(id, normX, normY) {
@@ -87,5 +86,9 @@ export default class Placer {
     experience.send('placerReady');
 
     callback();
+  }
+
+  onMetroBeat(measure, beat) {
+    this.renderer.setBlinkState(beat === 0);
   }
 }
