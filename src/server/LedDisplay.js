@@ -89,20 +89,15 @@ export default class LedDisplay extends EventEmitter {
   }
   allPixels(hexColor) {
     if (this.serialPort) {
-      if (this.isHex(hexColor))
-        this.serialPort.write('A ' + hexColor + '\n');
-      else
-        throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+      this.serialPort.write('A ' + hexColor + '\n');
+
     }
   }
 
   pixel(led, hexColor) {
     if (this.serialPort) {
       if ((led >= 0) && (led <= 127)) {
-        if (this.isHex(hexColor))
-          this.serialPort.write('B ' + hexColor + ' ' + this.pixels[led] + '\n');
-        else
-          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+        this.serialPort.write('B ' + hexColor + ' ' + this.pixels[led] + '\n');
       } else {
         throw new Error(`Pixel number is out of scope! Pixels permitted : 0-95`);
       }
@@ -112,10 +107,7 @@ export default class LedDisplay extends EventEmitter {
   line(lineNumber, hexColor) {
     if (this.serialPort) {
       if ((lineNumber >= 0) && (lineNumber <= 31)) {
-        if (this.isHex(hexColor))
-          this.serialPort.write('C ' + hexColor + ' ' + lineNumber + '\n');
-        else
-          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+        this.serialPort.write('C ' + hexColor + ' ' + lineNumber + '\n');
       } else {
         throw new Error(`Line number is out of scope! Lines permitted : 0-31`);
       }
@@ -131,10 +123,7 @@ export default class LedDisplay extends EventEmitter {
   segment(segmentNumber, hexColor) {
     if (this.serialPort) {
       if ((segmentNumber >= 0) && (segmentNumber <= 7)) {
-        if (this.isHex(hexColor))
-          this.serialPort.write('D ' + hexColor + ' ' + segmentNumber + '\n');
-        else
-          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+        this.serialPort.write('D ' + hexColor + ' ' + segmentNumber + '\n');
       } else {
         throw new Error(`Segment number is out of scope! Segments permitted : 0-7`);
       }
@@ -144,10 +133,9 @@ export default class LedDisplay extends EventEmitter {
   circle(circleNumber, hexColor) {
     if (this.serialPort) {
       if ((circleNumber >= 0) && (circleNumber <= 3)) {
-        if (this.isHex(hexColor))
-          this.serialPort.write('E ' + hexColor + ' ' + circleNumber + '\n');
-        else
-          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+
+        this.serialPort.write('E ' + hexColor + ' ' + circleNumber + '\n');
+
       } else {
         throw new Error(`Circle number is out of scope! Circles permitted : 0-3`);
       }
@@ -157,10 +145,9 @@ export default class LedDisplay extends EventEmitter {
   lineGradient(lineNumber, hexColor1, hexColor2) {
     if (this.serialPort) {
       if ((lineNumber >= 0) && (lineNumber <= 31)) {
-        if ((isHex(hexColor1)) && (isHex(hexColor2)))
-          this.serialPort.write('F ' + hexColor1 + ' ' + hexColor2 + ' ' + lineNumber + '\n');
-        else
-          throw new Error(`${hexColor} is not a valid hex number. Use this format : 0xFFFFFF`);
+
+        this.serialPort.write('F ' + hexColor1 + ' ' + hexColor2 + ' ' + lineNumber + '\n');
+
       } else {
         throw new Error(`Line number is out of scope! Lines permitted : 0-31`);
       }
@@ -194,17 +181,5 @@ export default class LedDisplay extends EventEmitter {
     return hex;
   }
 
-  // check if hex number is well formated
-  // it must be in format 0xFFFFFF
-  isHex(h) {
-    var hh = h.split('0x');
-    if (hh.length == 2) {
-      hh = hh[1];
-      if (hh === '000000') return true;
-      var a = parseInt(hh, 16);
-      return (a.toString(16) === hh.toLowerCase());
-    } else {
-      return false;
-    }
-  }
+
 }

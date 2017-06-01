@@ -25,6 +25,9 @@ export default class SceneCollectiveLoops {
     this.onSwitchNote = this.onSwitchNote.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
+
+    this.p_beat = 0;
+    this.onOffBlink = true;
   }
 
   clientEnter(client) {
@@ -90,16 +93,38 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
+
     const states = this.stepStates[beat];
-    const numSteps = this.stepStates.length;
 
-    // control LED display
-    for (let i = 0; i < numSteps; i++) {
-      const isPlacing = this.isPlacing[i];
+    const isPlacing = this.isPlacing[beat];
+    const experience = this.experience;
+    let p_beat = this.p_beat;
 
-      if (isPlacing)
-        this.placer.setBlinkState(i, beat < (numSteps / 2));
+    let colors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
+
+    experience.ledDisplay.clearPixels();
+
+    // BEAT COUNT FROM 0-7
+    let cnt = 0;
+    for (let i = 1; i < 32; i += 4) {
+
+      if (this.isPlacing[cnt] === false) {
+        /// color grid
+        experience.ledDisplay.line(i, colors[cnt]);
+        if (i + 1 < 32)
+          experience.ledDisplay.line(i + 1, colors[cnt]);
+      } else {
+        /// white grid
+        experience.ledDisplay.line(i, "0x808080");
+        if (i + 1 < 32)
+          experience.ledDisplay.line(i + 1, "0x808080");
+      }
+      cnt++;
     }
+
+    // BEAT SELECTOR
+    experience.ledDisplay.segment(beat, "0xFFFBCB");
+
 
     if (beat === 0)
       console.log("P P P B B B B B B M M M M M M M M M M M M -", measure);
@@ -124,6 +149,20 @@ export default class SceneCollectiveLoops {
     } else {
       console.log("- - - - - - - - - - - - - - - - - - - - -");
     }
+
+
+    /// BLINK NEWCOMMERS
+    for (let i = 0; i < this.isPlacing.length; i++) {
+      if (this.isPlacing[i] === true) {
+        if (this.onOffBlink) {
+          experience.ledDisplay.segment(i, colors[i]);
+        }
+      }
+    }
+
+    experience.ledDisplay.redraw();
+    this.p_beat = beat;
+    this.onOffBlink = !this.onOffBlink;
   }
 
   onSwitchNote(step, note, state) {
