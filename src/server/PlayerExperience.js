@@ -121,21 +121,17 @@ export default class PlayerExperience extends Experience {
   }
 
   onTempoChange(tempo) {
-    const setSceneTempo = this.currentScene.setTempo;
-
-    if (setSceneTempo)
-      setSceneTempo(tempo);
+    if (this.currentScene.setTempo)
+      this.currentScene.setTempo(tempo);
 
     const syncTime = this.metricScheduler.syncTime;
     const metricPosition = this.metricScheduler.getMetricPositionAtSyncTime(syncTime);
-    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1 / 4, 'tempoChange');
+    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1/4, 'tempoChange');
   }
 
   onClear() {
-    const clearScene = this.currentScene.clear;
-
-    if (clearScene)
-      clearScene();
+    if (this.currentScene.clear)
+      this.currentScene.clear();
   }
 
   onTemperature(data) {

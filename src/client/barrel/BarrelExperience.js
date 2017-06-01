@@ -26,7 +26,8 @@ const template = `
 `;
 
 const numOutputChannels = 8; // "virtual" output channels
-const numAudioOutputs = 2; // "physical" audio outputs
+const maxAudioDestinationChannels = audioContext.destination.maxChannelCount;
+const numAudioOutputs = maxAudioDestinationChannels ? Math.min(numOutputChannels, maxAudioDestinationChannels) : 2; // "physical" audio outputs
 
 export default class BarrelExperience extends soundworks.Experience {
   constructor(assetsDomain) {

@@ -1,5 +1,6 @@
 import TimeEngine from '../waves-audio/time-engine';
-import placerConfig from '../../shared/placer-config';
+import colorConfig from '../../shared/color-config';
+const playerColors = colorConfig.players;
 
 const minBlinkPeriod = 0.4;
 const maxBlinkPeriod = 1;
@@ -32,10 +33,11 @@ export default class Placer {
     }
   }
 
-  blink(index, state) {
+  setBlinkState(index, state) {
     if(this.blinkStates[index] !== state) {
       this.blinkStates[index] = state;
 
+      // control LEDs
       console.log(`blinking at place ${index + 1} (${state})`);
     }
   }

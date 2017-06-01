@@ -1,5 +1,7 @@
 import Metronome from '../Metronome';
 import Placer from './Placer';
+import colorConfig from '../../shared/color-config';
+const playerColors = colorConfig.players;
 
 export default class SceneCollectiveLoops {
   constructor(experience, config) {
@@ -44,7 +46,7 @@ export default class SceneCollectiveLoops {
     this.resetStepStates(clientIndex);
     this.experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
 
-    if(this.isPlacing[clientIndex]) {
+    if (this.isPlacing[clientIndex]) {
       this.placer.stop(client);
       this.isPlacing[clientIndex] = false;
     }
@@ -84,18 +86,19 @@ export default class SceneCollectiveLoops {
   }
 
   clear() {
-    this.resetAllStepStates();    
+    this.resetAllStepStates();
   }
 
   onMetroBeat(measure, beat) {
     const states = this.stepStates[beat];
+    const numSteps = this.stepStates.length;
 
     // control LED display
-    for(let i = 0; i < this.stepStates.length; i++) {
+    for (let i = 0; i < numSteps; i++) {
       const isPlacing = this.isPlacing[i];
 
-      if(isPlacing)
-        this.placer.blink(i, ((beat / 2) % 2) === 0);
+      if (isPlacing)
+        this.placer.setBlinkState(i, beat < (numSteps / 2));
     }
 
     if (beat === 0)

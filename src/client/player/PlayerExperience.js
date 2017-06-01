@@ -44,8 +44,12 @@ export default class PlayerExperience extends soundworks.Experience {
     this.metricScheduler = this.require('metric-scheduler');
     this.surface = null;
 
+    this.tempo = 120;
+
+    this.onTempoChange = this.onTempoChange.bind(this);
     this.onSceneChange = this.onSceneChange.bind(this);
     this.onClear = this.onClear.bind(this);
+    this.onReload = this.onReload.bind(this);
   }
 
   start() {
@@ -67,6 +71,7 @@ export default class PlayerExperience extends soundworks.Experience {
       this.initScenes();
       this.currentScene.enter();
 
+      this.sharedParams.addParamListener('tempo', this.onTempoChange);
       this.sharedParams.addParamListener('scene', this.onSceneChange);
       this.sharedParams.addParamListener('clear', this.onClear);
       this.sharedParams.addParamListener('reload', this.onReload);
@@ -97,6 +102,13 @@ export default class PlayerExperience extends soundworks.Experience {
     this.currentScene = this.scenes.off;
   }
 
+  onTempoChange(value) {
+    this.tempo = value;
+
+    if (this.currentScene.setTempo)
+      this.currentScene.setTempo(value);
+  }
+
   onSceneChange(value) {
     this.currentScene.exit();
     this.currentScene = this.scenes[value];
@@ -104,10 +116,8 @@ export default class PlayerExperience extends soundworks.Experience {
   }
 
   onClear() {
-    const clearScene = this.currentScene.clear;
-
-    if(clearScene)
-      clearScene();
+    if(this.currentScene.clear)
+      this.currentScene.clear();
   }
 
   onReload(value) {
