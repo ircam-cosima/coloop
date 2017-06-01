@@ -15,16 +15,37 @@ const maxActives = {
 };
 
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(states, notes) {
+  constructor(states, notes, index) {
     super(0);
 
     this.states = states;
     this.notes = notes;
+    this.myindex = index;
+    this.beatBanged = false;
   }
 
-  init() {}
+  init() { }
 
-  update(dt) {}
+  update(dt) { }
+
+  hexToRgbA(hex, alpha) {
+    var c;
+    if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+      c = hex.substring(1).split('');
+      if (c.length == 3) {
+        c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+      }
+      c = '0x' + c.join('');
+      return 'rgba(' + [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') + ',' + alpha + ')';
+    }
+    throw new Error('Bad Hex');
+  }
+
+  beatBang(data) {
+    //console.log("NOW", data);
+    this.beatBanged = true;
+    setTimeout(() => { this.beatBanged = false; }, 300);
+  }
 
   render(ctx) {
     ctx.save();
@@ -37,34 +58,45 @@ class Renderer extends soundworks.Canvas2dRenderer {
     const xEnd = this.canvasWidth - 10;
     let y = this.canvasHeight - stepHeight / 2;
 
+    // console.log(this.myindex);
+
+
+    const primaryColors = ["#FF0000", "#00FF55", "#023EFF", "#FFFF00", "#D802FF", "#00FFF5", "#FF0279", "#FF9102"];
+
+
     for (let i = 0; i < numStates; i++) {
       const state = states[i];
       const note = notes[i];
 
       ctx.beginPath();
       ctx.globalAlpha = 1;
+      ctx.strokeStyle = primaryColors[this.myindex];
 
       switch (note.class) {
         case 'perc':
-          ctx.strokeStyle = '#ffe066';
+          ctx.setLineDash([15, 5]);
           break;
 
         case 'bass':
-          ctx.strokeStyle = '#67c0fc';
+          ctx.setLineDash([]);
+
           break;
 
         case 'melody':
-          ctx.strokeStyle = '#f45d4e';
+          ctx.setLineDash([5, 5]);
           break;
       }
 
       switch (state) {
         case 0:
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 2;
           break;
 
         case 1:
-          ctx.lineWidth = 7;
+          if (this.beatBanged)
+            ctx.lineWidth = 15;
+          else
+            ctx.lineWidth = 7;
           break;
       }
 
@@ -85,12 +117,12 @@ const template = `
   <div class="foreground">
     <div class="section-top flex-middle"></div>
     <div class="section-center flex-middle">
-    <p class="player-index"><%= stepIndex %></p>
+    
     </div>
     <div class="section-bottom flex-middle"></div>
   </div>
 `;
-
+//<p class="player-index"><%= stepIndex %></p>
 export default class SceneCollectiveLoops {
   constructor(experience, config) {
     this.experience = experience;
@@ -114,10 +146,7 @@ export default class SceneCollectiveLoops {
       'melody': [],
     };
 
-    this.notes = null;
-    this.isPlacing = false;
-
-    this.renderer = new Renderer(this.states, config.playerNotes);
+    this.renderer = new Renderer(this.states, config.playerNotes, this.clientIndex);
     this.audioOutput = experience.audioOutput;
 
     this.onTouchStart = this.onTouchStart.bind(this);
@@ -125,21 +154,12 @@ export default class SceneCollectiveLoops {
   }
 
   startPlacer() {
-    const experience = this.experience;
-    const numSteps = this.config.numSteps;
-    
-    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
-    
-    this.isPlacing = true;
-
-    this.placer.start(() => {
-      this.isPlacing = false;
-      this.startScene();
-    });
+    this.placer.start(() => this.startScene());
   }
 
   startScene() {
     const experience = this.experience;
+    const numSteps = this.config.numSteps;
 
     this.$viewElem = experience.view.$el;
 
@@ -147,7 +167,7 @@ export default class SceneCollectiveLoops {
     experience.view.template = template;
     experience.view.render();
     experience.view.addRenderer(this.renderer);
-    experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
+    experience.view.setPreRender(function (ctx, dt, canvasWidth, canvasHeight) {
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#000000';
@@ -157,6 +177,7 @@ export default class SceneCollectiveLoops {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1, 1, this.clientIndex / numSteps);
   }
 
   enter() {
@@ -220,27 +241,25 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
-    if (this.isPlacing) {
-      this.placer.blink(((beat / 2) % 2) === 0);
-    } else if (beat === this.clientIndex) {
-      const time = audioScheduler.currentTime;
-      const states = this.states;
-      const notes = this.notes;
+    const time = audioScheduler.currentTime;
+    const states = this.states;
+    const notes = this.notes;
 
-      for (let i = 0; i < this.states.length; i++) {
-        const state = states[i];
-        const note = notes[i];
+    this.renderer.beatBang(beat);
 
-        if (state > 0) {
-          const gain = audioContext.createGain();
-          gain.connect(this.audioOutput);
-          gain.gain.value = note.gain;
+    for (let i = 0; i < this.states.length; i++) {
+      const state = states[i];
+      const note = notes[i];
 
-          const src = audioContext.createBufferSource();
-          src.connect(gain);
-          src.buffer = note.buffer;
-          src.start(time);
-        }
+      if (state > 0) {
+        const gain = audioContext.createGain();
+        gain.connect(this.audioOutput);
+        gain.gain.value = note.gain;
+
+        const src = audioContext.createBufferSource();
+        src.connect(gain);
+        src.buffer = note.buffer;
+        src.start(time);
       }
     }
   }
