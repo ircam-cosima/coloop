@@ -8,7 +8,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
   constructor() {
     super(0);
 
-    this.state = false;
+    this.blinkState = false;
     this.color = placerConfig[client.index].color;
   }
 
@@ -20,14 +20,14 @@ class Renderer extends soundworks.Canvas2dRenderer {
     ctx.save();
     ctx.beginPath();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = this.state ? this.color : '#000000';
+    ctx.fillStyle = this.blinkState ? this.color : '#000000';
     ctx.rect(0, 0, this.canvasWidth, this.canvasHeight);
     ctx.fill();
     ctx.restore();
   }
 
-  blink(state) {
-    this.state = state;
+  setBlinkState(state) {
+    this.blinkState = state;
   }
 }
 
@@ -75,8 +75,8 @@ export default class Placer {
     }
   }
 
-  blink(state) {
-    this.renderer.blink(state);
+  setBlinkState(state) {
+    this.renderer.setBlinkState(state);
   }
 
   onTouchStart(id, normX, normY) {

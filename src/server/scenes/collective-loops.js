@@ -95,7 +95,7 @@ export default class SceneCollectiveLoops {
       const isPlacing = this.isPlacing[i];
 
       if(isPlacing)
-        this.placer.blink(i, ((beat / 2) % 2) === 0);
+        this.placer.setBlinkState(i, ((beat / 2) % 2) === 0);
     }
 
     if (beat === 0)

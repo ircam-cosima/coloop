@@ -32,7 +32,7 @@ export default class Placer {
     }
   }
 
-  blink(index, state) {
+  setBlinkState(index, state) {
     if(this.blinkStates[index] !== state) {
       this.blinkStates[index] = state;
 

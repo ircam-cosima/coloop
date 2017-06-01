@@ -46,7 +46,7 @@ sharedParams.addNumber('outputGain7', 'output 7 gain', -40, 20, 1, 0, ['controll
 sharedParams.addNumber('wooferGain', 'woofer gain', -40, 20, 1, 0, ['controller', 'barrel']);
 sharedParams.addNumber('wooferCutoff', 'woofer cutoff', 50, 500, 5, 250, ['controller', 'barrel']);
 sharedParams.addNumber('barrelDelay', 'barrel delay', 0, 0.1, 0.02, 0.001, ['controller', 'barrel']);
-sharedParams.addNumber('tempo', 'tempo', 60, 240, 5, 120, ['controller']);
+sharedParams.addNumber('tempo', 'tempo', 60, 240, 5, 120, ['player', 'controller']);
 sharedParams.addTrigger('clear', 'clear players');
 sharedParams.addTrigger('reload', 'reload players');
 
