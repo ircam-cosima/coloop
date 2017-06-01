@@ -1,72 +1,108 @@
 import * as soundworks from 'soundworks/client';
 import Placer from './Placer';
+import LoopPlayer from '../../shared/LoopPlayer';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
+function clip(value) {
+  return Math.max(0, Math.min(1, value));
+}
+
+const numDiv = 1024;
+
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(states, notes) {
+  constructor(measureDuration) {
     super(0);
 
-    // this.states = states;
-    // this.notes = notes;
+    this.measureDuration = measureDuration;
+    this.layer = null;
+    this.layerIndex = 0;
+    this.layerPending = false;
+    this.measureStartTime = 0;
+    this.measurePhase = 0;
   }
 
-  init() {}
+  init() {
+    const canvasMin = Math.min(this.canvasWidth, this.canvasHeight);
+    this.ringRadius = canvasMin / 3;
+    this.innerRadius = 5 * canvasMin / 24 - 10;
+    this.width = Math.PI / 128;
+    this.lineWidth = canvasMin / 4;
+  }
+
+  setLayerIndex(index) {
+    this.layerIndex = index;
+    this.layerPending = true;
+  }
+
+  setMeasure(audioTime, layer, measureCount) {
+    this.layer = layer;
+    this.layerPending = false;
+    this.measureStartTime = audioTime;
+    this.loopMeasure = measureCount % layer.length;
+    this.measurePhase = 0;
+  }
 
   update(dt) {}
 
   render(ctx) {
-    // ctx.save();
+    const measureStartTime = this.measureStartTime;
 
-    // const notes = this.notes;
-    // const states = this.states;
-    // const numStates = states.length;
-    // const stepHeight = this.canvasHeight / numStates;
-    // const xStart = 10;
-    // const xEnd = this.canvasWidth - 10;
-    // let y = this.canvasHeight - stepHeight / 2;
+    if (measureStartTime > 0) {
+      const layer = this.layer;
+      const x0 = this.canvasWidth / 2;
+      const y0 = this.canvasHeight / 2;
+      const ringRadius = this.ringRadius;
+      const innerRadius = this.innerRadius;
+      const width = this.width;
+      const measureDuration = this.measureDuration;
+      const loopMeasure = this.loopMeasure;
+      const lastDiv = Math.floor(numDiv * this.measurePhase + 0.5);
+      const time = audioScheduler.currentTime;
+      const loopDuration = measureDuration * layer.length;
+      const measurePhase = ((time - measureStartTime) % measureDuration) / measureDuration;
+      let div = Math.floor(numDiv * measurePhase + 0.5);
 
-    // for (let i = 0; i < numStates; i++) {
-    //   const state = states[i];
-    //   const note = notes[i];
+      if (div < lastDiv)
+        div += numDiv;
 
-    //   ctx.beginPath();
-    //   ctx.globalAlpha = 1;
+      ctx.save();
 
-    //   switch (note.class) {
-    //     case 'perc':
-    //       ctx.strokeStyle = '#ffe066';
-    //       break;
+      for (let d = lastDiv; d < div; d++) {
+        const phi = (d % numDiv) / numDiv;
+        const angle = 2 * Math.PI * (phi - 0.25);
+        const loopPhase = (loopMeasure + phi) / layer.length;
+        const intensityIndex = Math.floor(loopPhase * layer.intensity.length + 0.5);
+        const intensityInDb = layer.intensity[intensityIndex] + 36;
+        const intensity = clip(Math.exp(0.3 * intensityInDb));
 
-    //     case 'bass':
-    //       ctx.strokeStyle = '#67c0fc';
-    //       break;
+        ctx.strokeStyle = layer.color || '#ffffff';
 
-    //     case 'melody':
-    //       ctx.strokeStyle = '#f45d4e';
-    //       break;
-    //   }
+        ctx.globalAlpha = intensity;
+        ctx.lineWidth = this.lineWidth;
 
-    //   switch (state) {
-    //     case 0:
-    //       ctx.lineWidth = 1;
-    //       break;
+        ctx.beginPath();
+        ctx.arc(x0, y0, ringRadius, angle - width, angle + width);
+        ctx.stroke();
+      }
 
-    //     case 1:
-    //       ctx.lineWidth = 7;
-    //       break;
-    //   }
+      ctx.globalAlpha = 0.05;
 
-    //   ctx.moveTo(xStart, y);
-    //   ctx.lineTo(xEnd, y);
-    //   ctx.stroke();
-    //   ctx.closePath();
+      if(this.layerPending) {
+        ctx.fillStyle = layer.color || '#ffffff';
+      } else {
+        ctx.fillStyle = '#000000';
+      }
 
-    //   y -= stepHeight;
-    // }
+        ctx.beginPath();
+        ctx.arc(x0, y0, innerRadius, 0, 2 * Math.PI);
+        ctx.fill();
 
-    // ctx.restore();
+      ctx.restore();
+
+      this.measurePhase = measurePhase;
+    }
   }
 }
 
@@ -75,7 +111,7 @@ const template = `
   <div class="foreground">
     <div class="section-top flex-middle"></div>
     <div class="section-center flex-middle">
-    <p class="player-index"><%= stepIndex %></p>
+    <p class="big"></p>
     </div>
     <div class="section-bottom flex-middle"></div>
   </div>
@@ -83,146 +119,130 @@ const template = `
 
 export default class SceneCoMix {
   constructor(experience, config) {
-    // this.experience = experience;
-    // this.config = config;
+    this.experience = experience;
+    this.config = config;
 
-    // this.state = 'init';
-    // this.placer = new Placer(experience);
+    this.placer = new Placer(experience);
 
-    // this.clientIndex = soundworks.client.index;
-    // this.notes = null;
-    // this.$viewElem = null;
+    this.$viewElem = null;
+    this.clientIndex = soundworks.client.index;
+    this.track = null;
+    this.layerIndex = 0;
 
-    // const numSteps = config.numSteps;
-    // const numStates = config.playerNotes.length;
+    const tempo = config.tempo;
+    const tempoUnit = config.tempoUnit;
+    this.measureDuration = 60 / (tempo * tempoUnit);
 
-    // this.states = new Array(numStates);
-    // this.resetStates();
+    const trackConfig = config.tracks[this.clientIndex];
+    this.renderer = new Renderer(this.measureDuration);
 
-    // this.actives = {
-    //   'perc': [],
-    //   'bass': [],
-    //   'melody': [],
-    // };
+    this.intensity = trackConfig.intensity;
+    this.audioOutput = experience.audioOutput;
 
-    // this.renderer = new Renderer(this.states, config.playerNotes);
-    // this.audioOutput = experience.audioOutput;
+    this.lastTrackCutoff = -Infinity;
 
-    // this.onClear = this.onClear.bind(this);
-    // this.onTouchStart = this.onTouchStart.bind(this);
-    // this.onMetroBeat = this.onMetroBeat.bind(this);
+    this.onTouchStart = this.onTouchStart.bind(this);
+    this.onMotionInput = this.onMotionInput.bind(this);
+    this.onMeasureStart = this.onMeasureStart.bind(this);
   }
 
   startPlacer() {
-    // this.placer.start(() => this.startScene());
+    this.placer.start(() => this.startScene());
   }
 
   startScene() {
-    // const experience = this.experience;
-    // const numSteps = this.config.numSteps;
+    const experience = this.experience;
+    const numSteps = this.config.numSteps;
 
-    // this.$viewElem = experience.view.$el;
+    this.$viewElem = experience.view.$el;
 
-    // experience.view.model = { stepIndex: this.clientIndex + 1 };
-    // experience.view.template = template;
-    // experience.view.render();
-    // experience.view.addRenderer(this.renderer);
-    // experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
-    //   ctx.save();
-    //   ctx.globalAlpha = 1;
-    //   ctx.fillStyle = '#000000';
-    //   ctx.rect(0, 0, canvasWidth, canvasHeight);
-    //   ctx.fill();
-    //   ctx.restore();
-    // });
+    if (!this.loopPlayer) {
+      const config = this.config;
+      this.loopPlayer = new LoopPlayer(experience.metricScheduler, [this.audioOutput], 1, config.tempo, config.tempoUnit, 0.05, this.onMeasureStart);
+    }
 
-    // experience.surface.addListener('touchstart', this.onTouchStart);
-    // experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1, 1, this.clientIndex / numSteps);
-    // experience.sharedParams.addParamListener('clear', this.onClear);
+    this.loopPlayer.addLoopTrack(0, this.track.layers);
+    this.renderer.setMeasure(0, 0);
+
+    experience.view.model = {};
+    experience.view.template = template;
+    experience.view.render();
+    experience.view.addRenderer(this.renderer);
+    experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
+      ctx.save();
+      ctx.globalAlpha = 0.05;
+      ctx.fillStyle = '#000000';
+      ctx.rect(0, 0, canvasWidth, canvasHeight);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    experience.surface.addListener('touchstart', this.onTouchStart);
+    experience.motionInput.addListener('accelerationIncludingGravity', this.onMotionInput);
   }
 
   enter() {
-    // const experience = this.experience;
+    const experience = this.experience;
 
-    // if (this.notes) {
-    //   this.startPlacer();
-    // } else {
-    //   const noteConfig = this.config.playerNotes;
-    //   experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
-    //     this.notes = notes;
-    //     this.startPlacer();
-    //   });
-    // }
+    if (this.notes) {
+      this.startPlacer();
+    } else {
+      const trackConfig = this.config.tracks[this.clientIndex];
+      experience.audioBufferManager.loadFiles(trackConfig).then((track) => {
+        this.track = track;
+        this.startPlacer();
+      });
+    }
   }
 
   exit() {
-    // this.resetStates();
-    // this.placer.stop();
+    this.placer.stop();
 
-    // if (this.$viewElem) {
-    //   this.$viewElem = null;
+    if (this.$viewElem) {
+      this.$viewElem = null;
 
-    //   const experience = this.experience;
-    //   experience.view.removeRenderer(this.renderer);
-    //   experience.surface.removeListener('touchstart', this.onTouchStart);
-    //   experience.metricScheduler.removeMetronome(this.onMetroBeat);
-    //   experience.sharedParams.removeParamListener('clear', this.onClear);
-    // }
-  }
+      const experience = this.experience;
+      experience.view.removeRenderer(this.renderer);
+      experience.surface.removeListener('touchstart', this.onTouchStart);
+      experience.motionInput.removeListener('accelerationIncludingGravity', this.onMotionInput);
+    }
 
-  resetStates() {
-    // for (let i = 0; i < this.states.length; i++)
-    //   this.states[i] = 0;
+    if (this.loopPlayer)
+      this.loopPlayer.removeLoopTrack(0);
   }
 
   onTouchStart(id, normX, normY) {
-    // const experience = this.experience;
-    // const numStates = this.states.length;
-    // const note = numStates - 1 - Math.floor(normY * numStates);
-    // const noteClass = this.notes[note].class;
-    // const state = (this.states[note] + 1) % 2;
-    // const actives = this.actives[noteClass];
+    const experience = this.experience;
+  
+    const numLayers = this.track.layers.length;
+    const layerIndex = (this.layerIndex + 1) % numLayers;
 
-    // if (state > 0) {
-    //   actives.push(note);
-
-    //   if (actives.length > maxActives[noteClass]) {
-    //     const offNote = actives.shift();
-    //     this.states[offNote] = 0;
-    //     experience.send('switchNote', this.clientIndex, offNote, 0);
-    //   }
-    // } else {
-    //   const idx = actives.indexOf(note);
-    //   actives.splice(idx, 1);
-    // }
-
-    // this.states[note] = state;
-    // experience.send('switchNote', this.clientIndex, note, state);
+    this.layerIndex = layerIndex;
+    this.loopPlayer.setLayer(0, layerIndex);
+    this.renderer.setLayerIndex(layerIndex);
+    experience.send('switchLayer', this.clientIndex, layerIndex);
   }
 
-  onMetroBeat(measure, beat) {
-    // const time = audioScheduler.currentTime;
-    // const states = this.states;
-    // const notes = this.notes;
+  onMotionInput(data) {
+    const accX = data[0];
+    const accY = data[1];
+    const accZ = data[2];
+    const pitch = 2 * Math.atan2(accY, Math.sqrt(accZ * accZ + accX * accX)) / Math.PI;
+    const roll = -2 * Math.atan2(accX, Math.sqrt(accY * accY + accZ * accZ)) / Math.PI;
+    const cutoff = 0.5 + Math.max(-0.8, Math.min(0.8, (accZ / 9.81))) / 1.6;
 
-    // for (let i = 0; i < this.states.length; i++) {
-    //   const state = states[i];
-    //   const note = notes[i];
+    if (Math.abs(cutoff - this.lastTrackCutoff) > 0.01) {
+      const experience = this.experience;
 
-    //   if (state > 0) {
-    //     const gain = audioContext.createGain();
-    //     gain.connect(this.audioOutput);
-    //     gain.gain.value = note.gain;
+      this.lastTrackCutoff = cutoff;
+      this.loopPlayer.setCutoff(0, cutoff);
 
-    //     const src = audioContext.createBufferSource();
-    //     src.connect(gain);
-    //     src.buffer = note.buffer;
-    //     src.start(time);
-    //   }
-    // }
+      experience.send('trackCutoff', this.clientIndex, cutoff);
+    }
   }
 
-  onClear() {
-    // this.resetStates();
+  onMeasureStart(audioTime, measureCount) {
+    const layer = this.track.layers[this.layerIndex];
+    this.renderer.setMeasure(audioTime, layer, measureCount);
   }
 }

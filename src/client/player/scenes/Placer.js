@@ -4,39 +4,6 @@ const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const TimeEngine = soundworks.audio.TimeEngine;
 
-class Blinker extends TimeEngine {
-  constructor(scheduler, renderer) {
-    super();
-
-    this.scheduler = scheduler;
-    this.renderer = renderer;
-
-    const place = placerConfig[client.index];
-    this.place = place.color;
-    this.period = place.period;
-    this.state = false;
-  }
-
-  advanceTime(time) {
-    this.renderer.blink(this.state);
-    this.state = !this.state;
-    return time + this.period;
-  }
-
-  start() {
-    const time = this.scheduler.currentTime;
-    const period = this.period;
-    const nextIndex = Math.ceil(time / period);
-    const startTime = nextIndex * period;
-    this.state = ((nextIndex % 2) !== 0);
-    this.scheduler.add(this, startTime);
-  }
-
-  stop() {
-    this.scheduler.remove(this);
-  }
-}
-
 class Renderer extends soundworks.Canvas2dRenderer {
   constructor() {
     super(0);
@@ -56,7 +23,6 @@ class Renderer extends soundworks.Canvas2dRenderer {
     ctx.fillStyle = this.state ? this.color : '#000000';
     ctx.rect(0, 0, this.canvasWidth, this.canvasHeight);
     ctx.fill();
-    ctx.closePath();
     ctx.restore();
   }
 
@@ -81,7 +47,6 @@ export default class Placer {
     this.experience = experience;
 
     this.renderer = new Renderer();
-    this.blinker = new Blinker(experience.syncScheduler, this.renderer);
     this.callback = null;
     this.audioOutput = experience.audioOutput;
 
@@ -90,8 +55,6 @@ export default class Placer {
 
   start(callback) {
     this.callback = callback;
-
-    this.blinker.start();
 
     const experience = this.experience;
     experience.view.model = {};
@@ -106,18 +69,23 @@ export default class Placer {
     if (this.callback) {
       this.callback = null;
 
-      this.blinker.stop();
-
       const experience = this.experience;
       experience.view.removeRenderer(this.renderer);
       experience.surface.removeListener('touchstart', this.onTouchStart);
     }
   }
 
+  blink(state) {
+    this.renderer.blink(state);
+  }
+
   onTouchStart(id, normX, normY) {
     const callback = this.callback;
     this.stop();
-    this.experience.send('placerReady');
+
+    const experience = this.experience;
+    experience.send('placerReady');
+
     callback();
   }
 }

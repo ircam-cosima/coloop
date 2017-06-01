@@ -4,6 +4,7 @@ import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
 import SceneCollectiveLoops from './scenes/collective-loops';
 import SceneCoMix from './scenes/co-mix';
+import SceneWwryR from './scenes/wwry-r';
 const audioContext = soundworks.audioContext;
 
 const sceneCtors = {
@@ -11,6 +12,7 @@ const sceneCtors = {
   'co-909': SceneCo909,
   'collective-loops': SceneCollectiveLoops,
   'co-mix': SceneCoMix,
+  'wwry-r': SceneWwryR,
 };
 
 const template = `
@@ -29,9 +31,7 @@ export default class PlayerExperience extends soundworks.Experience {
     super();
 
     this.platform = this.require('platform', { features: ['web-audio'] });
-    // this.motionInput = this.require('motion-input', {
-    //   descriptors: ['accelerationIncludingGravity']
-    // });
+    this.motionInput = this.require('motion-input', { descriptors: ['accelerationIncludingGravity'] });
 
     this.scenes = {};
     this.currentScene = null;
@@ -45,6 +45,7 @@ export default class PlayerExperience extends soundworks.Experience {
     this.surface = null;
 
     this.onSceneChange = this.onSceneChange.bind(this);
+    this.onClear = this.onClear.bind(this);
   }
 
   start() {
@@ -60,28 +61,17 @@ export default class PlayerExperience extends soundworks.Experience {
     });
 
     this.show().then(() => {
-      this.surface = new soundworks.TouchSurface(this.view.$el, { normalizeCoordinates: false } );
+      this.surface = new soundworks.TouchSurface(this.view.$el, { normalizeCoordinates: false });
 
       this.initAudio();
       this.initScenes();
       this.currentScene.enter();
 
       this.sharedParams.addParamListener('scene', this.onSceneChange);
+      this.sharedParams.addParamListener('clear', this.onClear);
       this.sharedParams.addParamListener('reload', this.onReload);
     });
   }
-
-  // initMotion() {
-  //   if (this.motionInput.isAvailable('accelerationIncludingGravity')) {
-  //     this.motionInput.addListener('accelerationIncludingGravity', (data) => {
-  //       const accX = data[0];
-  //       const accY = data[1];
-  //       const accZ = data[2];
-  //       const mag = Math.sqrt(accX * accX + accY * accY + accZ * accZ);
-  //       /* ??? */
-  //     });
-  //   }
-  // }
 
   initSurface() {
     const surface = new soundworks.TouchSurface(this.view.$el);
@@ -111,6 +101,13 @@ export default class PlayerExperience extends soundworks.Experience {
     this.currentScene.exit();
     this.currentScene = this.scenes[value];
     this.currentScene.enter();
+  }
+
+  onClear() {
+    const clearScene = this.currentScene.clear;
+
+    if(clearScene)
+      clearScene();
   }
 
   onReload(value) {

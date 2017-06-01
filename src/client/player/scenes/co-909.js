@@ -8,13 +8,14 @@ function radToDegrees(radians) {
 }
 
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(states, circleRadius, buttonRadius) {
+  constructor(states, circleRadius, buttonRadius, instrumentColor) {
     super(0);
 
     this.states = states;
     this.circleRadius = circleRadius;
     this.buttonRadius = buttonRadius;
     this.highlight = undefined;
+    this.instrumentColor = instrumentColor;
   }
 
   init() {
@@ -41,55 +42,53 @@ class Renderer extends soundworks.Canvas2dRenderer {
     const buttonRadius = this.buttonRadius;
     const states = this.states;
     const numSteps = states.length;
-    const yMargin = this.canvasHeight / 2;
-    const xMargin = this.canvasWidth / 2;
+    const x0 = this.canvasWidth / 2;
+    const y0 = this.canvasHeight / 2;
 
     for (let i = 0; i < numSteps; i++) {
       const state = states[i];
-
-      ctx.beginPath();
-      ctx.globalAlpha = 1;
+      let internalCircle = buttonRadius;
 
       switch (state) {
         case 0:
           if (i === this.highlight) {
             ctx.fillStyle = '#606060';
-            ctx.strokeStyle = "#ffffff";
           } else {
             ctx.fillStyle = '#000000';
-            ctx.strokeStyle = "#ffffff";
           }
           break;
 
         case 1:
           if (i === this.highlight) {
             ctx.fillStyle = '#FFFFFF';
-            ctx.strokeStyle = "#ffffff";
           } else {
-            ctx.fillStyle = '#00217E';
-            ctx.strokeStyle = "#ffffff";
+            ctx.fillStyle = this.instrumentColor;
+            internalCircle = buttonRadius / 2;
           }
           break;
 
         case 2:
           if (i === this.highlight) {
             ctx.fillStyle = '#FFFFFF';
-            ctx.strokeStyle = "#ffffff";
           } else {
-            ctx.fillStyle = '#A7BEFF';
-            ctx.strokeStyle = "#ffffff";
+            ctx.fillStyle = this.instrumentColor;
           }
           break;
       }
 
-      ctx.ellipse(xMargin + this.positionXArr[i], yMargin - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
+      ctx.beginPath();
+      ctx.ellipse(x0 + this.positionXArr[i], y0 - this.positionYArr[i], internalCircle, internalCircle, 0, 0, 2 * Math.PI);
       ctx.fill();
+
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#ffffff";
+
+      ctx.beginPath();
+      ctx.ellipse(x0 + this.positionXArr[i], y0 - this.positionYArr[i], buttonRadius, buttonRadius, 0, 0, 2 * Math.PI);
       ctx.stroke();
-      ctx.closePath();
     }
 
     ctx.restore();
-
   }
 
   setHighlight(index) {
@@ -110,24 +109,27 @@ const template = `
 
 export default class SceneCo909 {
   constructor(experience, config) {
+
+    /// config 909
+
     this.experience = experience;
     this.config = config;
 
-    this.instrument = null;
     this.$viewElem = null;
+    this.instrument = null;
 
     this.clientIndex = soundworks.client.index;
     this.numSteps = config.numSteps;
     this.sequence = new Array(this.numSteps);
-    this.resetSequence();
+    this.clear();
 
     const canvasMin = Math.min(window.innerWidth, window.innerHeight);
     this.buttonRadius = canvasMin / 15;
     this.circleRadius = canvasMin / 2 - this.buttonRadius - 10;
-    this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius);
+    let instrumentColor = this.config.instrumentColors[soundworks.client.index];
+    this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius, instrumentColor);
     this.audioOutput = experience.audioOutput;
 
-    this.onClear = this.onClear.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
   }
@@ -141,7 +143,7 @@ export default class SceneCo909 {
     experience.view.template = template;
     experience.view.render();
     experience.view.addRenderer(this.renderer);
-    experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
+    experience.view.setPreRender(function (ctx, dt, canvasWidth, canvasHeight) {
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#000000';
@@ -152,19 +154,18 @@ export default class SceneCo909 {
 
     experience.surface.addListener('touchstart', this.onTouchStart);
     experience.metricScheduler.addMetronome(this.onMetroBeat, this.numSteps, this.numSteps);
-    experience.sharedParams.addParamListener('clear', this.onClear);
   }
 
   enter() {
     const experience = this.experience;
 
-    if(this.instrument) {
+    if (this.instrument) {
       this.enterScene();
     } else {
       const instrumentConfig = this.config.playerInstruments[soundworks.client.index];
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
         this.instrument = instrument;
-        this.enterScene();        
+        this.enterScene();
       });
     }
   }
@@ -174,11 +175,10 @@ export default class SceneCo909 {
     experience.view.removeRenderer(this.renderer);
     experience.surface.removeListener('touchstart', this.onTouchStart);
     experience.metricScheduler.removeMetronome(this.onMetroBeat);
-    experience.sharedParams.removeParamListener('clear', this.onClear);
-    this.resetSequence();
+    this.clear();
   }
 
-  resetSequence() {
+  clear() {
     for (let i = 0; i < this.sequence.length; i++)
       this.sequence[i] = 0;
   }
@@ -216,9 +216,5 @@ export default class SceneCo909 {
     }
 
     this.renderer.setHighlight(beat);
-  }
-
-  onClear() {
-    this.resetSequence();
   }
 }

@@ -9,6 +9,10 @@ export default class SceneOff {
   clientExit(client) {}
 
   enter() {}
-  
+
   exit() {}
+
+  setTempo(tempo) {}
+
+  clear() {}
 }

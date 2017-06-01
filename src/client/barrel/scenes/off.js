@@ -6,11 +6,11 @@ export default class SceneOff {
     this.config = config;
   }
 
-  enter() {
+  clientEnter(client) {}
 
-  }
+  clientExit(client) {}
 
-  exit() {
+  enter() {}
 
-  }
+  exit() {}
 }

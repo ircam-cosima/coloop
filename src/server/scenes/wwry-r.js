@@ -1,10 +1,10 @@
 import Metronome from '../Metronome';
 import Placer from './Placer';
 
-const numBeats = 32;
+const numBeats = 8;
 const numMeasures = 1;
 
-export default class CoMix {
+export default class SceneWwryR {
   constructor(experience, config) {
     this.experience = experience;
     this.config = config;
@@ -18,8 +18,7 @@ export default class CoMix {
     this.trackLayers = [0, 0, 0, 0, 0, 0, 0, 0];
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
-    this.onTrackCutoff = this.onTrackCutoff.bind(this);
-    this.onSwitchLayer = this.onSwitchLayer.bind(this);
+    this.onMotionInput = this.onMotionInput.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numBeats * numMeasures, numBeats, this.onMetroBeat);
   }
@@ -28,8 +27,7 @@ export default class CoMix {
     const experience = this.experience;
     const clientIndex = client.index;
 
-    experience.receive(client, 'trackCutoff', this.onTrackCutoff);
-    experience.receive(client, 'switchLayer', this.onSwitchLayer);
+    experience.receive(client, 'motionInput', this.onMotionInput);
 
     this.isPlacing[clientIndex] = true;
     this.placer.start(client, () => {
@@ -42,8 +40,7 @@ export default class CoMix {
     const clientIndex = client.index;
 
     this.stopTrack(clientIndex);
-    experience.stopReceiving(client, 'trackCutoff', this.onTrackCutoff);
-    experience.stopReceiving(client, 'switchLayer', this.onSwitchLayer);
+    experience.stopReceiving(client, 'motionInput', this.onMotionInput);
 
     if (this.isPlacing[clientIndex]) {
       this.placer.stop(client);
@@ -54,7 +51,6 @@ export default class CoMix {
   enter() {
     const experience = this.experience;
     experience.sharedParams.update('tempo', this.config.tempo);
-    experience.enableTempoChange(false);
 
     this.metronome.start();
   }
@@ -64,7 +60,6 @@ export default class CoMix {
     
     const experience = this.experience;
     experience.sharedParams.update('tempo', this.config.tempo);
-    experience.enableTempoChange(true);
   }
 
   stopTrack(step) {
@@ -82,17 +77,10 @@ export default class CoMix {
     console.log(beat);
   }
 
-  onTrackCutoff(track, value) {
+  onMotionInput(player, time, value) {
     this.trackCutoffs[track] = value;
 
     const experience = this.experience;
-    experience.broadcast('barrel', null, 'trackCutoff', track, value);
-  }
-
-  onSwitchLayer(track, value) {
-    this.trackLayers[track] = value;
-
-    const experience = this.experience;
-    experience.broadcast('barrel', null, 'switchLayer', track, value);
+    experience.broadcast('barrel', null, 'motionInput', player, time, value);
   }
 }

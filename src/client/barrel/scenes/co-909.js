@@ -22,8 +22,12 @@ export default class SceneCo909 {
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onSwitchNote = this.onSwitchNote.bind(this);
-    this.onDisconnectClient = this.onDisconnectClient.bind(this);
-    this.onClear = this.onClear.bind(this);
+  }
+
+  clientEnter(index) {}
+
+  clientExit(index) {
+    this.resetInstrumentSequence(index);
   }
 
   enterScene() {
@@ -31,20 +35,18 @@ export default class SceneCo909 {
     const numSteps = this.config.numSteps;
     experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
     experience.receive('switchNote', this.onSwitchNote);
-    experience.receive('disconnectClient', this.onDisconnectClient);
-    experience.sharedParams.addParamListener('clear', this.onClear);    
   }
 
   enter() {
     const experience = this.experience;
 
-    if(this.instruments) {
+    if (this.instruments) {
       this.enterScene();
     } else {
       const instrumentConfig = this.config.barrelInstruments;
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instruments) => {
         this.instruments = instruments;
-        this.enterScene();        
+        this.enterScene();
       });
     }
   }
@@ -53,8 +55,6 @@ export default class SceneCo909 {
     const experience = this.experience;
     experience.metricScheduler.removeMetronome(this.onMetroBeat);
     experience.stopReceiving('switchNote', this.onSwitchNote);
-    experience.stopReceiving('disconnectClient', this.onDisconnectClient);
-    experience.sharedParams.removeParamListener('clear', this.onClear());
   }
 
   resetInstrumentSequence(instrument) {
@@ -63,6 +63,11 @@ export default class SceneCo909 {
     for (let i = 0; i < sequence.length; i++) {
       sequence[i] = 0;
     }
+  }
+
+  clear() {
+    for (let i = 0; i < this.instrumentSequences.length; i++)
+      this.resetInstrumentSequence(i);
   }
 
   onMetroBeat(measure, beat) {
@@ -85,14 +90,5 @@ export default class SceneCo909 {
   onSwitchNote(instrument, beat, state) {
     const sequence = this.instrumentSequences[instrument];
     sequence[beat] = state;
-  }
-
-  onDisconnectClient(instrument) {
-    this.resetInstrumentSequence(instrument);
-  }
-
-  onClear() {
-    for (let i = 0; i < this.instrumentSequences.length; i++)
-      this.resetInstrumentSequence(i);
   }
 }

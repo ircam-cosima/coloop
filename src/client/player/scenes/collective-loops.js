@@ -71,7 +71,6 @@ class Renderer extends soundworks.Canvas2dRenderer {
       ctx.moveTo(xStart, y);
       ctx.lineTo(xEnd, y);
       ctx.stroke();
-      ctx.closePath();
 
       y -= stepHeight;
     }
@@ -97,7 +96,6 @@ export default class SceneCollectiveLoops {
     this.experience = experience;
     this.config = config;
 
-    this.state = 'init';
     this.placer = new Placer(experience);
 
     this.clientIndex = soundworks.client.index;
@@ -108,7 +106,7 @@ export default class SceneCollectiveLoops {
     const numStates = config.playerNotes.length;
 
     this.states = new Array(numStates);
-    this.resetStates();
+    this.clear();
 
     this.actives = {
       'perc': [],
@@ -116,21 +114,32 @@ export default class SceneCollectiveLoops {
       'melody': [],
     };
 
+    this.notes = null;
+    this.isPlacing = false;
+
     this.renderer = new Renderer(this.states, config.playerNotes);
     this.audioOutput = experience.audioOutput;
 
-    this.onClear = this.onClear.bind(this);
     this.onTouchStart = this.onTouchStart.bind(this);
     this.onMetroBeat = this.onMetroBeat.bind(this);
   }
 
   startPlacer() {
-    this.placer.start(() => this.startScene());
+    const experience = this.experience;
+    const numSteps = this.config.numSteps;
+    
+    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
+    
+    this.isPlacing = true;
+
+    this.placer.start(() => {
+      this.isPlacing = false;
+      this.startScene();
+    });
   }
 
   startScene() {
     const experience = this.experience;
-    const numSteps = this.config.numSteps;
 
     this.$viewElem = experience.view.$el;
 
@@ -148,8 +157,6 @@ export default class SceneCollectiveLoops {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1, 1, this.clientIndex / numSteps);
-    experience.sharedParams.addParamListener('clear', this.onClear);
   }
 
   enter() {
@@ -167,7 +174,7 @@ export default class SceneCollectiveLoops {
   }
 
   exit() {
-    this.resetStates();
+    this.clear();
     this.placer.stop();
 
     if (this.$viewElem) {
@@ -177,11 +184,10 @@ export default class SceneCollectiveLoops {
       experience.view.removeRenderer(this.renderer);
       experience.surface.removeListener('touchstart', this.onTouchStart);
       experience.metricScheduler.removeMetronome(this.onMetroBeat);
-      experience.sharedParams.removeParamListener('clear', this.onClear);
     }
   }
 
-  resetStates() {
+  clear() {
     for (let i = 0; i < this.states.length; i++)
       this.states[i] = 0;
   }
@@ -214,28 +220,28 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
-    const time = audioScheduler.currentTime;
-    const states = this.states;
-    const notes = this.notes;
+    if (this.isPlacing) {
+      this.placer.blink(((beat / 2) % 2) === 0);
+    } else if (beat === this.clientIndex) {
+      const time = audioScheduler.currentTime;
+      const states = this.states;
+      const notes = this.notes;
 
-    for (let i = 0; i < this.states.length; i++) {
-      const state = states[i];
-      const note = notes[i];
+      for (let i = 0; i < this.states.length; i++) {
+        const state = states[i];
+        const note = notes[i];
 
-      if (state > 0) {
-        const gain = audioContext.createGain();
-        gain.connect(this.audioOutput);
-        gain.gain.value = note.gain;
+        if (state > 0) {
+          const gain = audioContext.createGain();
+          gain.connect(this.audioOutput);
+          gain.gain.value = note.gain;
 
-        const src = audioContext.createBufferSource();
-        src.connect(gain);
-        src.buffer = note.buffer;
-        src.start(time);
+          const src = audioContext.createBufferSource();
+          src.connect(gain);
+          src.buffer = note.buffer;
+          src.start(time);
+        }
       }
     }
-  }
-
-  onClear() {
-    this.resetStates();
   }
 }
