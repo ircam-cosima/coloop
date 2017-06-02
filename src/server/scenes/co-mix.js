@@ -1,6 +1,7 @@
 import Metronome from '../Metronome';
 import Placer from './Placer';
 import colorConfig from '../../shared/color-config';
+
 const playerColors = colorConfig.players;
 
 const numBeats = 32;
@@ -81,17 +82,79 @@ export default class CoMix {
   onMetroBeat(measure, beat) {
     const numTracks = this.tracks.length;
 
+    let colors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
+    const experience = this.experience;
+
     // control LED display
+    experience.ledDisplay.clearPixels();
+    experience.ledDisplay.line(beat, "0xFFFBCB");
+
+    if (beat > 0) {
+      experience.ledDisplay.line(beat - 1, "0xC7C49E");
+    } else {
+      experience.ledDisplay.line(32 - 1, "0xC7C49E");
+    }
+    if (beat > 1) {
+      experience.ledDisplay.line(beat - 2, "0x8A886E");
+    }
+    if (beat > 2) {
+      experience.ledDisplay.line(beat - 3, "0x434235");
+    }
+
+    //console.log(this.trackLayers);
+
+    for (let i = 0; i < this.trackCutoffs.length; i++) {
+      if (this.trackCutoffs[i] > 0) {
+        //let u0 = Math.round(this.mapF(this.trackCutoffs[i], 0.0, 1.0, 0, 31));
+        let ccc = this.colorLuminance(colors[i].replace('0x', '#'), 0 - (1 - this.trackCutoffs[i]));
+        //console.log(-this.trackCutoffs[i]);
+        experience.ledDisplay.segment(i, ccc.replace('#', '0x'));
+      }
+    }
+
+    /// BLINK NEW INCOMMERS
     for (let i = 0; i < numBeats; i++) {
       const isPlacing = this.isPlacing[i];
 
-      if (isPlacing)
-        this.placer.setBlinkState(i, beat > numBeats / 2);
+      if (isPlacing) {
+        //this.placer.setBlinkState(i, beat > numBeats / 2);
+        if (!(beat > numBeats / 2))
+          experience.ledDisplay.segment(i, colors[i]);
+      }
     }
 
+    experience.ledDisplay.redraw();
     // control LEDs turning around for each measure ???
     // could also use trackCutoffs and/or trackLayers of the 8 tracks (this.tracks.length = 8)
     console.log(beat);
+  }
+
+
+  mapF(value,
+    istart, istop,
+    ostart, ostop) {
+    return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
+  }
+
+
+  colorLuminance(hex, lum) {
+
+    // validate hex string
+    hex = String(hex).replace(/[^0-9a-f]/gi, '');
+    if (hex.length < 6) {
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    lum = lum || 0;
+
+    // convert to decimal and change luminosity
+    var rgb = "#", c, i;
+    for (i = 0; i < 3; i++) {
+      c = parseInt(hex.substr(i * 2, 2), 16);
+      c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+      rgb += ("00" + c).substr(c.length);
+    }
+
+    return rgb;
   }
 
   onTrackCutoff(track, value) {

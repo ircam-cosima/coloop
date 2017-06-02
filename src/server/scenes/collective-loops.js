@@ -3,6 +3,8 @@ import Placer from './Placer';
 import colorConfig from '../../shared/color-config';
 const playerColors = colorConfig.players;
 
+const numBeats = 8;
+
 export default class SceneCollectiveLoops {
   constructor(experience, config) {
     this.experience = experience;
@@ -26,8 +28,7 @@ export default class SceneCollectiveLoops {
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
 
-    this.p_beat = 0;
-    this.onOffBlink = true;
+
   }
 
   clientEnter(client) {
@@ -93,12 +94,12 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
-
+    //    console.log("BEATS", beat);
     const states = this.stepStates[beat];
 
     const isPlacing = this.isPlacing[beat];
     const experience = this.experience;
-    let p_beat = this.p_beat;
+  
 
     let colors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
 
@@ -150,19 +151,21 @@ export default class SceneCollectiveLoops {
       console.log("- - - - - - - - - - - - - - - - - - - - -");
     }
 
-
     /// BLINK NEWCOMMERS
-    for (let i = 0; i < this.isPlacing.length; i++) {
-      if (this.isPlacing[i] === true) {
-        if (this.onOffBlink) {
+  
+
+    for (let i = 0; i < numBeats; i++) {
+      const isPlacing = this.isPlacing[i];
+
+      if (isPlacing) {
+        if (!(beat > numBeats / 2))
           experience.ledDisplay.segment(i, colors[i]);
-        }
+       
       }
     }
 
     experience.ledDisplay.redraw();
-    this.p_beat = beat;
-    this.onOffBlink = !this.onOffBlink;
+
   }
 
   onSwitchNote(step, note, state) {
