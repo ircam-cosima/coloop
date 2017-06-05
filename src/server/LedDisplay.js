@@ -86,6 +86,7 @@ export default class LedDisplay extends EventEmitter {
   requestTemperature() {
     if (this.serialPort)
       this.serialPort.write('T\n');
+     // console.log("ASKED FOR TEMPERATURE");
   }
   allPixels(hexColor) {
     if (this.serialPort) {
