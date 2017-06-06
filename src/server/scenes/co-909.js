@@ -1,4 +1,6 @@
 import Metronome from '../Metronome';
+import colorConfig from '../../shared/color-config';
+const playerColors = colorConfig.players;
 
 export default class SceneCo909 {
   constructor(experience, config) {
@@ -6,7 +8,7 @@ export default class SceneCo909 {
     this.config = config;
 
     const numSteps = config.numSteps;
-    const numInstruments = config.playerInstruments.length;
+    const numInstruments = config.instruments.length;
 
     this.instrumentSequences = new Array(numInstruments);
 
@@ -14,8 +16,6 @@ export default class SceneCo909 {
       this.instrumentSequences[i] = new Array(numSteps);
       this.resetInstrumentSequence(i);
     }
-
-    this.primaryColors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
     this.onSwitchNote = this.onSwitchNote.bind(this);
@@ -125,14 +125,16 @@ export default class SceneCo909 {
       let sequence = instrumentSequences[inst];
       for (let i = 0; i < sequence.length; i++) {
         if ((sequence[i] === 1) || (sequence[i] === 2)) {
+          const colorCode = '0x' + playerColors[inst];
           let ds = Math.round((32.0 / 16.0) * i);
+
           if (inst <= 3) {
-            experience.ledDisplay.ledOnLine(ds, inst % 4, this.primaryColors[inst]);
+            experience.ledDisplay.ledOnLine(ds, inst % 4, colorCode);
           } else {
             if (ds <= 31)
-              experience.ledDisplay.ledOnLine(ds + 1, inst % 4, this.primaryColors[inst]);
+              experience.ledDisplay.ledOnLine(ds + 1, inst % 4, colorCode);
             else
-              experience.ledDisplay.ledOnLine(0, inst % 4, this.primaryColors[inst]);
+              experience.ledDisplay.ledOnLine(0, inst % 4, colorCode);
           }
         }
       }

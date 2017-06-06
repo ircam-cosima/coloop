@@ -9,7 +9,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
     super(0);
 
     this.blinkState = false;
-    this.color = colorConfig.players[client.index];
+    this.color = '#' + colorConfig.players[client.index];
   }
 
   init() {}

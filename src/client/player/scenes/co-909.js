@@ -1,21 +1,24 @@
 import * as soundworks from 'soundworks/client';
+import { decibelToLinear } from 'soundworks/utils/math';
+import colorConfig from '../../../shared/color-config';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
+const playerColors = colorConfig.players;
 
 function radToDegrees(radians) {
   return radians * 180 / Math.PI;
 }
 
 class Renderer extends soundworks.Canvas2dRenderer {
-  constructor(states, circleRadius, buttonRadius, instrumentColor) {
+  constructor(states, circleRadius, buttonRadius, color) {
     super(0);
 
     this.states = states;
     this.circleRadius = circleRadius;
     this.buttonRadius = buttonRadius;
     this.highlight = undefined;
-    this.instrumentColor = instrumentColor;
+    this.color = color;
   }
 
   init() {
@@ -62,7 +65,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
           if (i === this.highlight) {
             ctx.fillStyle = '#FFFFFF';
           } else {
-            ctx.fillStyle = this.instrumentColor;
+            ctx.fillStyle = this.color;
             internalCircle = buttonRadius / 2;
           }
           break;
@@ -71,7 +74,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
           if (i === this.highlight) {
             ctx.fillStyle = '#FFFFFF';
           } else {
-            ctx.fillStyle = this.instrumentColor;
+            ctx.fillStyle = this.color;
           }
           break;
       }
@@ -110,15 +113,14 @@ const template = `
 export default class SceneCo909 {
   constructor(experience, config) {
 
-    /// config 909
-
     this.experience = experience;
     this.config = config;
 
     this.$viewElem = null;
     this.instrument = null;
 
-    this.clientIndex = soundworks.client.index;
+    const clientIndex = soundworks.client.index;
+    this.clientIndex = clientIndex;
     this.numSteps = config.numSteps;
     this.sequence = new Array(this.numSteps);
     this.clear();
@@ -126,8 +128,7 @@ export default class SceneCo909 {
     const canvasMin = Math.min(window.innerWidth, window.innerHeight);
     this.buttonRadius = canvasMin / 15;
     this.circleRadius = canvasMin / 2 - this.buttonRadius - 10;
-    let instrumentColor = this.config.instrumentColors[soundworks.client.index];
-    this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius, instrumentColor);
+    this.renderer = new Renderer(this.sequence, this.circleRadius, this.buttonRadius, '#' + playerColors[clientIndex]);
     this.audioOutput = experience.audioOutput;
 
     this.onTouchStart = this.onTouchStart.bind(this);
@@ -162,7 +163,7 @@ export default class SceneCo909 {
     if (this.instrument) {
       this.enterScene();
     } else {
-      const instrumentConfig = this.config.playerInstruments[soundworks.client.index];
+      const instrumentConfig = this.config.instruments[soundworks.client.index];
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
         this.instrument = instrument;
         this.enterScene();
@@ -209,9 +210,15 @@ export default class SceneCo909 {
 
     if (state > 0) {
       const time = audioScheduler.currentTime;
+      const layer = this.instrument.layers[state - 1];
+
+      const gain = audioContext.createGain(); 
+      gain.connect(this.audioOutput);
+      gain.gain.value = decibelToLinear(layer.gain);
+
       const src = audioContext.createBufferSource();
-      src.connect(this.audioOutput);
-      src.buffer = (state === 1) ? this.instrument.low : this.instrument.high;
+      src.connect(gain);
+      src.buffer = layer.buffer;
       src.start(time);
     }
 

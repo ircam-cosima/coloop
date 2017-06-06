@@ -1,7 +1,6 @@
 import Metronome from '../Metronome';
 import Placer from './Placer';
 import colorConfig from '../../shared/color-config';
-
 const playerColors = colorConfig.players;
 
 const numBeats = 32;
@@ -80,10 +79,8 @@ export default class CoMix {
   }
 
   onMetroBeat(measure, beat) {
-    const numTracks = this.tracks.length;
-
-    let colors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
     const experience = this.experience;
+    const numTracks = this.tracks.length;
 
     // control LED display
     experience.ledDisplay.clearPixels();
@@ -101,25 +98,17 @@ export default class CoMix {
       experience.ledDisplay.line(beat - 3, "0x434235");
     }
 
-    //console.log(this.trackLayers);
-
-    for (let i = 0; i < this.trackCutoffs.length; i++) {
-      if (this.trackCutoffs[i] > 0) {
-        //let u0 = Math.round(this.mapF(this.trackCutoffs[i], 0.0, 1.0, 0, 31));
-        let ccc = this.colorLuminance(colors[i].replace('0x', '#'), 0 - (1 - this.trackCutoffs[i]));
-        //console.log(-this.trackCutoffs[i]);
-        experience.ledDisplay.segment(i, ccc.replace('#', '0x'));
-      }
-    }
-
-    /// BLINK NEW INCOMMERS
-    for (let i = 0; i < numBeats; i++) {
+    for (let i = 0; i < this.tracks.length; i++) {
       const isPlacing = this.isPlacing[i];
 
       if (isPlacing) {
         //this.placer.setBlinkState(i, beat > numBeats / 2);
-        if (!(beat > numBeats / 2))
-          experience.ledDisplay.segment(i, colors[i]);
+
+        if (beat <= numBeats / 2)
+          experience.ledDisplay.segment(i, '0x' + playerColors[i]);
+      } else if (this.trackCutoffs[i] > 0) {
+        let ccc = this.colorLuminance(playerColors[i], 0 - (1 - this.trackCutoffs[i]));
+        experience.ledDisplay.segment(i, '0x' + ccc);
       }
     }
 
@@ -129,29 +118,29 @@ export default class CoMix {
     console.log(beat);
   }
 
-
   mapF(value,
     istart, istop,
     ostart, ostop) {
     return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
   }
 
-
   colorLuminance(hex, lum) {
-
     // validate hex string
     hex = String(hex).replace(/[^0-9a-f]/gi, '');
+
     if (hex.length < 6) {
       hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
+
     lum = lum || 0;
 
     // convert to decimal and change luminosity
-    var rgb = "#", c, i;
+    var rgb = '', c, i;
+
     for (i = 0; i < 3; i++) {
       c = parseInt(hex.substr(i * 2, 2), 16);
       c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
-      rgb += ("00" + c).substr(c.length);
+      rgb += ('00' + c).substr(c.length);
     }
 
     return rgb;

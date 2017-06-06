@@ -13,7 +13,7 @@ export default class SceneCollectiveLoops {
     this.placer = new Placer(experience);
 
     const numSteps = config.numSteps;
-    const numNotes = config.playerNotes.length;
+    const numNotes = config.notes.length;
 
     this.stepStates = new Array(numSteps);
     this.isPlacing = new Array(numSteps);
@@ -100,23 +100,23 @@ export default class SceneCollectiveLoops {
     const isPlacing = this.isPlacing[beat];
     const experience = this.experience;
   
-
-    let colors = ["0xFF0000", "0x00FF55", "0x023EFF", "0xFFFF00", "0xD802FF", "0x00FFF5", "0xFF0279", "0xFF9102"];
-
     experience.ledDisplay.clearPixels();
 
     // BEAT COUNT FROM 0-7
     let cnt = 0;
     for (let i = 1; i < 32; i += 4) {
+      if (!this.isPlacing[cnt]) {
+        const playerColor = 'Ox' + playerColors[cnt];
 
-      if (this.isPlacing[cnt] === false) {
         /// color grid
-        experience.ledDisplay.line(i, colors[cnt]);
+        experience.ledDisplay.line(i, playerColor);
+
         if (i + 1 < 32)
-          experience.ledDisplay.line(i + 1, colors[cnt]);
+          experience.ledDisplay.line(i + 1, playerColor);
       } else {
         /// white grid
         experience.ledDisplay.line(i, "0x808080");
+
         if (i + 1 < 32)
           experience.ledDisplay.line(i + 1, "0x808080");
       }
@@ -125,7 +125,6 @@ export default class SceneCollectiveLoops {
 
     // BEAT SELECTOR
     experience.ledDisplay.segment(beat, "0xFFFBCB");
-
 
     if (beat === 0)
       console.log("P P P B B B B B B M M M M M M M M M M M M -", measure);
@@ -158,9 +157,8 @@ export default class SceneCollectiveLoops {
       const isPlacing = this.isPlacing[i];
 
       if (isPlacing) {
-        if (!(beat > numBeats / 2))
-          experience.ledDisplay.segment(i, colors[i]);
-       
+        if (beat <= numBeats / 2)
+          experience.ledDisplay.segment(i, 'Ox' + playerColors[cnt]);
       }
     }
 

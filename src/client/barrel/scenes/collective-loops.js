@@ -1,4 +1,5 @@
 import * as soundworks from 'soundworks/client';
+import { decibelToLinear } from 'soundworks/utils/math';
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
@@ -9,7 +10,7 @@ export default class SceneCollectiveLoops {
     this.notes = null;
 
     const numSteps = config.numSteps;
-    const numNotes = config.barrelNotes.length;
+    const numNotes = config.notes.length;
 
     this.stepStates = new Array(numSteps);
 
@@ -43,7 +44,7 @@ export default class SceneCollectiveLoops {
     if (this.notes) {
       this.enterScene();
     } else {
-      const noteConfig = this.config.barrelNotes;
+      const noteConfig = this.config.notes;
       experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
         this.notes = notes;
         this.enterScene();
@@ -83,7 +84,7 @@ export default class SceneCollectiveLoops {
       if (state > 0) {
         const gain = audioContext.createGain();
         gain.connect(output);
-        gain.gain.value = note.gain;
+        gain.gain.value = decibelToLinear(note.gain);
 
         const src = audioContext.createBufferSource();
         src.connect(gain);

@@ -1,4 +1,5 @@
 import * as soundworks from 'soundworks/client';
+import { decibelToLinear } from 'soundworks/utils/math';
 import Placer from './Placer';
 import colorConfig from '../../../shared/color-config';
 const client = soundworks.client;
@@ -71,7 +72,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
 
       ctx.beginPath();
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = playerColors[this.myindex];
+      ctx.strokeStyle = '#' + playerColors[this.myindex];
 
       switch (note.class) {
         case 'perc':
@@ -136,7 +137,7 @@ export default class SceneCollectiveLoops {
     this.$viewElem = null;
 
     const numSteps = config.numSteps;
-    const numStates = config.playerNotes.length;
+    const numStates = config.notes.length;
 
     this.states = new Array(numStates);
     this.clear();
@@ -147,7 +148,7 @@ export default class SceneCollectiveLoops {
       'melody': [],
     };
 
-    this.renderer = new Renderer(this.states, config.playerNotes, this.clientIndex);
+    this.renderer = new Renderer(this.states, config.notes, this.clientIndex);
     this.audioOutput = experience.audioOutput;
 
     this.onTouchStart = this.onTouchStart.bind(this);
@@ -187,7 +188,7 @@ export default class SceneCollectiveLoops {
     if (this.notes) {
       this.startPlacer();
     } else {
-      const noteConfig = this.config.playerNotes;
+      const noteConfig = this.config.notes;
       experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
         this.notes = notes;
         this.startPlacer();
@@ -255,7 +256,7 @@ export default class SceneCollectiveLoops {
       if (state > 0) {
         const gain = audioContext.createGain();
         gain.connect(this.audioOutput);
-        gain.gain.value = note.gain;
+        gain.gain.value = decibelToLinear(note.gain);
 
         const src = audioContext.createBufferSource();
         src.connect(gain);

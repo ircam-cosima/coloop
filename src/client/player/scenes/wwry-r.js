@@ -5,6 +5,10 @@ const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
+function getTime() {
+  return new Date().getTime();
+}
+
 function clip(value) {
   return Math.max(0, Math.min(1, value));
 }
@@ -23,7 +27,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
   update(dt) {}
 
   render(ctx) {
-    if(this.blink) {
+    if (this.blink) {
       this.blink = false;
 
       ctx.save();
@@ -32,7 +36,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
       ctx.rect(0, 0, canvasWidth, canvasHeight);
       ctx.fill();
       ctx.restore();
-     }
+    }
   }
 
   triggerBlink() {
@@ -143,6 +147,49 @@ export default class SceneWwryR {
       this.queenPlayer.removeLoopTrack(0);
   }
 
+  initHitDetect() {
+    this.thresholdAlpha = 400;
+    this.thresholdGamma = 500;
+
+    this.lastTime = getTime();
+
+    this.lastAlpha = null;
+    this.lastBeta = null;
+    this.lastGamma = null;
+  }
+
+  runHitDetect(alpha, beta, gamma) {
+    if (this.lastAlpha !== null) {
+      const deltaAlpha = Math.abs(this.lastAlpha - alpha);
+      const deltaBeta = Math.abs(this.lastBeta - beta);
+      const deltaGamma = Math.abs(this.lastGamma - gamma);
+
+      if (Math.abs(alpha) > this.thresholdAlpha || Math.abs(gamma) > this.thresholdGamma) {
+        const currentTime = getTime();
+        const timeDifference = currentTime - this.lastTime;
+
+        if (timeDifference > 100) {
+          if (Math.abs(alpha) > this.thresholdAlpha && alpha < 0) {
+            this.event.kind = "right";
+          } else if (Math.abs(alpha) > this.thresholdAlpha && alpha >= 0) {
+            this.event.kind = "left";
+          } else if (Math.abs(gamma) > this.thresholdGamma && gamma < 0) {
+            this.event.kind = "up";
+          } else {
+            this.event.kind = "down";
+          }
+
+          window.dispatchEvent(this.event);
+          this.lastTime = getTime();
+        }
+      }
+    }
+
+    this.lastAlpha = alpha;
+    this.lastBeta = beta;
+    this.lastGamma = gamma;
+  }
+
   onAcceleration(data) {
     const experience = this.experience;
     const time = experience.syncScheduler.currentTime;
@@ -156,9 +203,9 @@ export default class SceneWwryR {
   onRotationRate(data) {
     const experience = this.experience;
     const time = experience.syncScheduler.currentTime;
-    const gyroX = data[0];
-    const gyroY = data[1];
-    const gyroZ = data[2];
+    const gyroAlpha = data[0];
+    const gyroBeta = data[1];
+    const gyroGamma = data[2];
 
     experience.send('motionInput', this.clientIndex, time, 0);
   }

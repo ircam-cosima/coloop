@@ -1,4 +1,5 @@
 import * as soundworks from 'soundworks/client';
+import { decibelToLinear } from 'soundworks/utils/math';
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
@@ -9,7 +10,7 @@ export default class SceneCo909 {
     this.instruments = null;
 
     const numSteps = config.numSteps;
-    const numInstruments = config.barrelInstruments.length;
+    const numInstruments = config.instruments.length;
 
     this.instrumentSequences = new Array(numInstruments);
 
@@ -43,7 +44,7 @@ export default class SceneCo909 {
     if (this.instruments) {
       this.enterScene();
     } else {
-      const instrumentConfig = this.config.barrelInstruments;
+      const instrumentConfig = this.config.instruments;
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instruments) => {
         this.instruments = instruments;
         this.enterScene();
@@ -79,9 +80,15 @@ export default class SceneCo909 {
       const state = sequence[beat];
 
       if (state > 0) {
+        const layer = instrument.layers[state - 1];
+
+        const gain = audioContext.createGain(); 
+        gain.connect(this.outputBusses[i]);
+        gain.gain.value = decibelToLinear(layer.gain);
+
         const src = audioContext.createBufferSource();
-        src.connect(this.outputBusses[i]);
-        src.buffer = (state === 1) ? instrument.low : instrument.high;
+        src.connect(gain);
+        src.buffer = layer.buffer;
         src.start(time);
       }
     }

@@ -1,4 +1,5 @@
 import * as soundworks from 'soundworks/client';
+import { decibelToLinear } from 'soundworks/utils/math';
 
 const audio = soundworks.audio;
 const audioContext = soundworks.audioContext;
@@ -8,6 +9,7 @@ function appendSegments(segments, loopSegment, measureDuration) {
   const buffer = loopSegment.buffer;
   const bufferDuration = buffer ? buffer.duration : 0;
   const startOffset = loopSegment.startOffset || 0;
+  const gain = loopSegment.gain;
   const repeat = loopSegment.repeat || 1;
 
   for (let n = 0; n < repeat; n++) {
@@ -17,7 +19,7 @@ function appendSegments(segments, loopSegment, measureDuration) {
       const offset = startOffset + i * measureDuration;
 
       if (offset < bufferDuration) {
-        const segment = new Segment(buffer, offset, Infinity, 0, cont);
+        const segment = new Segment(buffer, offset, Infinity, 0, gain, cont);
         segments.push(segment);
       }
 
@@ -27,11 +29,12 @@ function appendSegments(segments, loopSegment, measureDuration) {
 }
 
 class Segment {
-  constructor(buffer, offsetInBuffer = 0, durationInBuffer = Infinity, offsetInMeasure = 0, cont = false) {
+  constructor(buffer, offsetInBuffer = 0, durationInBuffer = Infinity, offsetInMeasure = 0, gain = 0, cont = false) {
     this.buffer = buffer;
     this.offsetInBuffer = offsetInBuffer;
     this.durationInBuffer = durationInBuffer; // 0: continue untill next segment starts
     this.offsetInMeasure = offsetInMeasure;
+    this.gain = gain;
     this.continue = cont; // segment continues previous segment
   }
 }
@@ -61,8 +64,11 @@ class SegmentTrack {
     this.endTime = 0;
   }
 
-  startSegment(audioTime, buffer, offsetInBuffer, durationInBuffer = Infinity) {
+  startSegment(audioTime, segment) {
+    const buffer = segment.buffer;
     const bufferDuration = buffer.duration;
+    const offsetInBuffer = segment.offsetInBuffer;
+    const durationInBuffer = Math.min((segment.durationInBuffer || Infinity), bufferDuration - offsetInBuffer);
     let transitionTime = this.transitionTime;
 
     if (audioTime < this.endTime - transitionTime) {
@@ -87,8 +93,12 @@ class SegmentTrack {
         transitionTime = offsetInBuffer;
       }
 
+      const gain = audioContext.createGain();
+      gain.connect(this.cutoff);
+      gain.gain.value = decibelToLinear(segment.gain);
+
       const env = audioContext.createGain();
-      env.connect(this.cutoff);
+      env.connect(gain);
 
       if (transitionTime > 0) {
         env.gain.value = 0;
@@ -102,8 +112,6 @@ class SegmentTrack {
       src.start(audioTime + delay, offsetInBuffer - transitionTime);
 
       audioTime += transitionTime;
-
-      durationInBuffer = Math.min(durationInBuffer, bufferDuration - offsetInBuffer);
 
       const endInBuffer = offsetInBuffer + durationInBuffer;
       let endTime = audioTime + durationInBuffer;
@@ -139,7 +147,7 @@ class SegmentTrack {
 
     if (segment && (this.discontinue || !(segment.continue && canContinue))) {
       const delay = segment.offsetInMeasure || 0;
-      this.startSegment(audioTime + delay, segment.buffer, segment.offsetInBuffer, segment.durationInBuffer);
+      this.startSegment(audioTime + delay, segment);
       this.discontinue = false;
     }
   }
@@ -238,7 +246,7 @@ export default class LoopPlayer extends audio.TimeEngine {
       const segments = [];
 
       if (Array.isArray(layer))
-        layer.forEach((elem) => appendSegments(segments, elem, this.measureDuration));
+        layer.forEach((seg) => appendSegments(segments, seg, this.measureDuration));
       else
         appendSegments(segments, layer, this.measureDuration);
 
