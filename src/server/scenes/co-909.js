@@ -1,4 +1,5 @@
 import Metronome from '../Metronome';
+import Placer from './Placer';
 import colorConfig from '../../shared/color-config';
 const playerColors = colorConfig.players;
 
@@ -7,10 +8,13 @@ export default class SceneCo909 {
     this.experience = experience;
     this.config = config;
 
+    this.placer = new Placer(experience);
+
     const numSteps = config.numSteps;
     const numInstruments = config.instruments.length;
 
     this.instrumentSequences = new Array(numInstruments);
+    this.isPlacing = new Array(numInstruments);
 
     for (let i = 0; i < numInstruments; i++) {
       this.instrumentSequences[i] = new Array(numSteps);
@@ -28,17 +32,29 @@ export default class SceneCo909 {
 
   clientEnter(client) {
     const experience = this.experience;
+    const clientIndex = client.index;
 
     experience.receive(client, 'switchNote', this.onSwitchNote);
+
+    this.isPlacing[clientIndex] = true;
+    this.placer.start(client, () => {
+      this.isPlacing[clientIndex] = false;
+    });
   }
 
   clientExit(client) {
     const experience = this.experience;
+    const clientIndex = client.index;
 
     // reset sequence of exiting client
     this.resetInstrumentSequence(client.index);
 
     experience.stopReceiving(client, 'switchNote', this.onSwitchNote);
+
+    if (this.isPlacing[clientIndex]) {
+      this.placer.stop(client);
+      this.isPlacing[clientIndex] = false;
+    }
   }
 
   enter() {
@@ -88,9 +104,8 @@ export default class SceneCo909 {
   onMetroBeat(measure, beat) {
     const experience = this.experience;
     const instrumentSequences = this.instrumentSequences;
-
-
     let displaySelector = Math.round((32.0 / 16.0) * beat);
+    const numBeats = this.config.numSteps;
 
     /// clear screen
     experience.ledDisplay.clearPixels();
@@ -154,14 +169,21 @@ export default class SceneCo909 {
         experience.ledDisplay.line(0, "0xFFFBCB");
       }
     }
+
     if (beat === 0)
       console.log("BD SD HH MT PC HT LT CY -", measure);
 
     let str = "";
     for (let i = 0; i < instrumentSequences.length; i++) {
+      const isPlacing = this.isPlacing[i];
       const sequence = instrumentSequences[i];
       const state = sequence[beat];
       let char = '.  ';
+
+      if(isPlacing) {
+        char = '|  ';
+        this.placer.setBlinkState(i, beat < numBeats / 2);
+      }
 
       if (state === 1)
         char = String.fromCharCode(0x25EF) + '  ';

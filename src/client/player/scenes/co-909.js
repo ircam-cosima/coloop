@@ -1,5 +1,6 @@
 import * as soundworks from 'soundworks/client';
 import { decibelToLinear } from 'soundworks/utils/math';
+import Placer from './Placer';
 import colorConfig from '../../../shared/color-config';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
@@ -116,6 +117,8 @@ export default class SceneCo909 {
     this.experience = experience;
     this.config = config;
 
+    this.placer = new Placer(experience);
+
     this.$viewElem = null;
     this.instrument = null;
 
@@ -135,7 +138,11 @@ export default class SceneCo909 {
     this.onMetroBeat = this.onMetroBeat.bind(this);
   }
 
-  enterScene() {
+  startPlacer() {
+    this.placer.start(() => this.startScene());
+  }
+
+  startScene() {
     const experience = this.experience;
 
     this.$viewElem = experience.view.$el;
@@ -161,12 +168,12 @@ export default class SceneCo909 {
     const experience = this.experience;
 
     if (this.instrument) {
-      this.enterScene();
+      this.startPlacer();
     } else {
       const instrumentConfig = this.config.instruments[soundworks.client.index];
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
         this.instrument = instrument;
-        this.enterScene();
+        this.startPlacer();
       });
     }
   }
