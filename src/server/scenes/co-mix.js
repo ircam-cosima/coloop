@@ -84,6 +84,21 @@ export default class CoMix {
 
     // control LED display
     experience.ledDisplay.clearPixels();
+
+    for (let i = 0; i < this.tracks.length; i++) {
+      const isPlacing = this.isPlacing[i];
+
+      if (isPlacing) {
+        if (beat <= numBeats / 2)
+          experience.ledDisplay.segment(i, '0x' + playerColors[i]);
+      } else if (this.trackCutoffs[i] > 0) {
+        let ccc = this.colorLuminance(playerColors[i], 0 - (1 - this.trackCutoffs[i]));
+        experience.ledDisplay.segment(i, '0x' + ccc);
+      }
+    }
+
+
+    // tempo white gradient
     experience.ledDisplay.line(beat, "0xFFFBCB");
 
     if (beat > 0) {
@@ -96,20 +111,6 @@ export default class CoMix {
     }
     if (beat > 2) {
       experience.ledDisplay.line(beat - 3, "0x434235");
-    }
-
-    for (let i = 0; i < this.tracks.length; i++) {
-      const isPlacing = this.isPlacing[i];
-
-      if (isPlacing) {
-        //this.placer.setBlinkState(i, beat > numBeats / 2);
-
-        if (beat <= numBeats / 2)
-          experience.ledDisplay.segment(i, '0x' + playerColors[i]);
-      } else if (this.trackCutoffs[i] > 0) {
-        let ccc = this.colorLuminance(playerColors[i], 0 - (1 - this.trackCutoffs[i]));
-        experience.ledDisplay.segment(i, '0x' + ccc);
-      }
     }
 
     experience.ledDisplay.redraw();

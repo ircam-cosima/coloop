@@ -99,7 +99,7 @@ export default class SceneCollectiveLoops {
 
     const isPlacing = this.isPlacing[beat];
     const experience = this.experience;
-  
+
     experience.ledDisplay.clearPixels();
 
     // BEAT COUNT FROM 0-7
@@ -151,14 +151,15 @@ export default class SceneCollectiveLoops {
     }
 
     /// BLINK NEWCOMMERS
-  
+
 
     for (let i = 0; i < numBeats; i++) {
       const isPlacing = this.isPlacing[i];
-
+      
       if (isPlacing) {
-        if (beat <= numBeats / 2)
-          experience.ledDisplay.segment(i, 'Ox' + playerColors[cnt]);
+        if (beat <= numBeats / 2) {
+          experience.ledDisplay.segment(i, 'Ox' + playerColors[i]);
+        }
       }
     }
 
