@@ -314,7 +314,7 @@ export default {
    *
    */
   'wwry-r': {
-    tempo: 82,
+    tempo: 81.5,
     tempoUnit: 1 / 4,
     tracks: [{
       name: 'drums',

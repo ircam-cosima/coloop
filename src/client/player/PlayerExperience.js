@@ -31,7 +31,7 @@ export default class PlayerExperience extends soundworks.Experience {
     super();
 
     this.platform = this.require('platform', { features: ['web-audio'] });
-    this.motionInput = this.require('motion-input', { descriptors: ['accelerationIncludingGravity'] });
+    this.motionInput = this.require('motion-input', { descriptors: ['rotationRate', 'accelerationIncludingGravity'] });
 
     this.scenes = {};
     this.currentScene = null;

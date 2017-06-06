@@ -18,7 +18,7 @@ export default class SceneWwryR {
     this.trackLayers = [0, 0, 0, 0, 0, 0, 0, 0];
 
     this.onMetroBeat = this.onMetroBeat.bind(this);
-    this.onMotionInput = this.onMotionInput.bind(this);
+    this.onMotionEvent = this.onMotionEvent.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numBeats * numMeasures, numBeats, this.onMetroBeat);
   }
@@ -27,7 +27,7 @@ export default class SceneWwryR {
     const experience = this.experience;
     const clientIndex = client.index;
 
-    experience.receive(client, 'motionInput', this.onMotionInput);
+    experience.receive(client, 'motionEvent', this.onMotionEvent);
 
     this.isPlacing[clientIndex] = true;
     this.placer.start(client, () => {
@@ -39,8 +39,7 @@ export default class SceneWwryR {
     const experience = this.experience;
     const clientIndex = client.index;
 
-    this.stopTrack(clientIndex);
-    experience.stopReceiving(client, 'motionInput', this.onMotionInput);
+    experience.stopReceiving(client, 'motionEvent', this.onMotionEvent);
 
     if (this.isPlacing[clientIndex]) {
       this.placer.stop(client);
@@ -49,26 +48,13 @@ export default class SceneWwryR {
   }
 
   enter() {
-    const experience = this.experience;
-    experience.sharedParams.update('tempo', this.config.tempo);
-
+    this.experience.sharedParams.update('tempo', this.config.tempo);
     this.metronome.start();
   }
 
   exit() {    
     this.metronome.stop();
-    
-    const experience = this.experience;
-    experience.sharedParams.update('tempo', this.config.tempo);
-  }
-
-  stopTrack(step) {
-
-  }
-
-  stopAllTracks() {
-    for (let i = 0; i < this.tracks.length; i++)
-      this.stopTrack(i);
+    this.experience.sharedParams.update('tempo', this.config.tempo);
   }
 
   onMetroBeat(measure, beat) {
@@ -77,10 +63,7 @@ export default class SceneWwryR {
     console.log(beat);
   }
 
-  onMotionInput(player, time, value) {
-    this.trackCutoffs[track] = value;
-
-    const experience = this.experience;
-    experience.broadcast('barrel', null, 'motionInput', player, time, value);
+  onMotionEvent(index, data) {
+    this.experience.broadcast('barrel', null, 'motionEvent', index, data);
   }
 }

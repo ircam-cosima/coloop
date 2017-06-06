@@ -1,6 +1,6 @@
 import * as soundworks from 'soundworks/client';
 import Placer from './Placer';
-import queenPlayer from '../../shared/QueenPlayer';
+import QueenPlayer from '../../shared/QueenPlayer';
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
 
@@ -15,8 +15,9 @@ export default class SceneWwryR {
 
     this.placer = new Placer(experience);
     this.queenPlayer = null;
+    this.tracks = [];
 
-    this.onMotionInput = this.onMotionInput.bind(this);
+    this.onMotionEvent = this.onMotionEvent.bind(this);
   }
 
   clientEnter(index) {
@@ -26,7 +27,7 @@ export default class SceneWwryR {
       const queenPlayer = this.queenPlayer;
 
       if (queenPlayer)
-        queenPlayer.enableTrack(index, true);
+        queenPlayer.startTrack(index, this.tracks[index]);
     });
   }
 
@@ -34,17 +35,15 @@ export default class SceneWwryR {
     const queenPlayer = this.queenPlayer;
 
     if (queenPlayer)
-      queenPlayer.enableTrack(index, false);
+      queenPlayer.stopTrack(index);
   }
 
   enterScene() {
     const experience = this.experience;
-    experience.receive('motionInput', this.onMotionInput);
+    experience.receive('motionEvent', this.onMotionEvent);
 
-    if (!this.queenPlayer) {
-      const config = this.config;
-      this.queenPlayer = new QueenPlayer(this.config);
-    }
+    if (!this.queenPlayer)
+      this.queenPlayer = new QueenPlayer(this.outputBusses);
   }
 
   enter() {
@@ -63,16 +62,15 @@ export default class SceneWwryR {
 
   exit() {
     const experience = this.experience;
-    experience.stopReceiving('motionInput', this.onMotionInput);
+    experience.stopReceiving('motionEvent', this.onMotionEvent);
 
     this.placer.clear();
-    this.queenPlayer.stopAllTracks();
   }
 
-  onMotionInput(index, time, value) {
+  onMotionEvent(index, data) {
     const queenPlayer = this.queenPlayer;
 
     if (queenPlayer)
-      queenPlayer.updateMotionData(index, time, value);
+      queenPlayer.onMotionEvent(index, data);
   }
 }

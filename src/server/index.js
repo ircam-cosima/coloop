@@ -34,7 +34,7 @@ server.setClientConfigDefinition((clientType, config, httpRequest) => {
 const sharedParams = server.require('shared-params');
 sharedParams.addText('numPlayers', 'num players', 0, ['controller']);
 sharedParams.addText('temperature', 'temperature', 0, ['controller']);
-sharedParams.addEnum('scene', 'scene', ['off', 'co-909', 'collective-loops', 'co-mix'], 'off');
+sharedParams.addEnum('scene', 'scene', ['off', 'co-909', 'collective-loops', 'co-mix', 'wwry-r'], 'off');
 sharedParams.addNumber('outputGain0', 'output 0 gain', -40, 20, 1, 0, ['controller', 'barrel']);
 sharedParams.addNumber('outputGain1', 'output 1 gain', -40, 20, 1, 0, ['controller', 'barrel']);
 sharedParams.addNumber('outputGain2', 'output 2 gain', -40, 20, 1, 0, ['controller', 'barrel']);
