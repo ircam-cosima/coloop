@@ -46,7 +46,11 @@ export default class PlayerExperience extends Experience {
       // null means automatic port search, otherwise put something like : /dev/tty.wchusbserial1420
 
       this.ledDisplay.addListener('temperature', this.onTemperature);
-      this.ledDisplay.requestTemperature();
+
+      // we need to wait that arduino start his processes and starts to listen
+      // this is not beautiful way to do it. Arduino has to send one byte when is ready... todo
+      setTimeout(() => { this.ledDisplay.requestTemperature(); }, 2000);
+
     });
 
     this.initScenes();
@@ -72,7 +76,6 @@ export default class PlayerExperience extends Experience {
 
   enter(client) {
     super.enter(client);
-
     this.currentScene.clientEnter(client);
 
     this.broadcast('barrel', null, 'connectClient', client.index);
@@ -110,11 +113,17 @@ export default class PlayerExperience extends Experience {
       if (value)
         this.sharedParams.addParamListener('tempo', this.onTempoChange);
       else
-        this.sharedParams.removeParamListener('tempo', this.onTempoChange);      
+        this.sharedParams.removeParamListener('tempo', this.onTempoChange);
     }
   }
 
   onSceneChange(value) {
+    // get temperature on each change of scenario
+    try {
+      this.ledDisplay.requestTemperature();
+    } catch(e) {
+      console.log("will get temperature later");
+    }
     this.exitCurrentScene();
     this.currentScene = this.scenes[value];
     this.enterCurrentScene();
@@ -126,7 +135,7 @@ export default class PlayerExperience extends Experience {
 
     const syncTime = this.metricScheduler.syncTime;
     const metricPosition = this.metricScheduler.getMetricPositionAtSyncTime(syncTime);
-    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1/4, 'tempoChange');
+    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1 / 4, 'tempoChange');
   }
 
   onClear() {

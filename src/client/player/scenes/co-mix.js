@@ -44,10 +44,12 @@ class Renderer extends soundworks.Canvas2dRenderer {
     this.measurePhase = 0;
   }
 
-  update(dt) {}
+  update(dt) { }
 
   render(ctx) {
     const measureStartTime = this.measureStartTime;
+    let clientIndex = soundworks.client.index;
+    let primaryColors = ["#FF0000", "#00FF55", "#023EFF", "#FFFF00", "#D802FF", "#00FFF5", "#FF0279", "#FF9102"];
 
     if (measureStartTime > 0) {
       const layer = this.layer;
@@ -77,7 +79,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
         const intensityInDb = layer.intensity[intensityIndex] + 36;
         const intensity = clip(Math.exp(0.3 * intensityInDb));
 
-        ctx.strokeStyle = layer.color || '#ffffff';
+        ctx.strokeStyle = layer.color ||  primaryColors[clientIndex];
 
         ctx.globalAlpha = intensity;
         ctx.lineWidth = this.lineWidth;
@@ -89,15 +91,15 @@ class Renderer extends soundworks.Canvas2dRenderer {
 
       ctx.globalAlpha = 0.05;
 
-      if(this.layerPending) {
-        ctx.fillStyle = layer.color || '#ffffff';
+      if (this.layerPending) {
+        ctx.fillStyle = layer.color ||  primaryColors[clientIndex];
       } else {
         ctx.fillStyle = '#000000';
       }
 
-        ctx.beginPath();
-        ctx.arc(x0, y0, innerRadius, 0, 2 * Math.PI);
-        ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x0, y0, innerRadius, 0, 2 * Math.PI);
+      ctx.fill();
 
       ctx.restore();
 
@@ -168,7 +170,7 @@ export default class SceneCoMix {
     experience.view.template = template;
     experience.view.render();
     experience.view.addRenderer(this.renderer);
-    experience.view.setPreRender(function(ctx, dt, canvasWidth, canvasHeight) {
+    experience.view.setPreRender(function (ctx, dt, canvasWidth, canvasHeight) {
       ctx.save();
       ctx.globalAlpha = 0.05;
       ctx.fillStyle = '#000000';
@@ -187,6 +189,7 @@ export default class SceneCoMix {
     if (this.notes) {
       this.startPlacer();
     } else {
+
       const trackConfig = this.config.tracks[this.clientIndex];
       experience.audioBufferManager.loadFiles(trackConfig).then((track) => {
         this.track = track;
@@ -213,7 +216,7 @@ export default class SceneCoMix {
 
   onTouchStart(id, normX, normY) {
     const experience = this.experience;
-  
+
     const numLayers = this.track.layers.length;
     const layerIndex = (this.layerIndex + 1) % numLayers;
 
