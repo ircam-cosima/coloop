@@ -1,9 +1,11 @@
 import * as soundworks from 'soundworks/client';
 import Placer from './Placer';
 import LoopPlayer from '../../shared/LoopPlayer';
+import colorConfig from '../../../shared/color-config';
 const client = soundworks.client;
 const audioContext = soundworks.audioContext;
 const audioScheduler = soundworks.audio.getScheduler();
+const playerColors = colorConfig.players;
 
 function clip(value) {
   return Math.max(0, Math.min(1, value));
@@ -49,7 +51,6 @@ class Renderer extends soundworks.Canvas2dRenderer {
   render(ctx) {
     const measureStartTime = this.measureStartTime;
     let clientIndex = soundworks.client.index;
-    let primaryColors = ["#FF0000", "#00FF55", "#023EFF", "#FFFF00", "#D802FF", "#00FFF5", "#FF0279", "#FF9102"];
 
     if (measureStartTime > 0) {
       const layer = this.layer;
@@ -78,8 +79,9 @@ class Renderer extends soundworks.Canvas2dRenderer {
         const intensityIndex = Math.floor(loopPhase * layer.intensity.length + 0.5);
         const intensityInDb = layer.intensity[intensityIndex] + 36;
         const intensity = clip(Math.exp(0.3 * intensityInDb));
+        const color = layer.color ||  playerColors[clientIndex];
 
-        ctx.strokeStyle = layer.color ||  primaryColors[clientIndex];
+        ctx.strokeStyle = color;
 
         ctx.globalAlpha = intensity;
         ctx.lineWidth = this.lineWidth;
@@ -92,7 +94,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
       ctx.globalAlpha = 0.05;
 
       if (this.layerPending) {
-        ctx.fillStyle = layer.color ||  primaryColors[clientIndex];
+        ctx.fillStyle = color;
       } else {
         ctx.fillStyle = '#000000';
       }
