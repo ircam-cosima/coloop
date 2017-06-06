@@ -62,7 +62,7 @@ export default class SceneCo909 {
     experience.ledDisplay.addListener('buttonTurned', this.onButtonTurned);
 
     this.metronome.start();
-}
+  }
 
   exit() {
     const experience = this.experience;
@@ -180,9 +180,11 @@ export default class SceneCo909 {
       const state = sequence[beat];
       let char = '.  ';
 
-      if(isPlacing) {
+      if (isPlacing) {
         char = '|  ';
-        this.placer.setBlinkState(i, beat < numBeats / 2);
+        if (beat <= numBeats / 2) {
+          experience.ledDisplay.segment(i, 'Ox' + playerColors[i]);
+        }
       }
 
       if (state === 1)
@@ -192,15 +194,7 @@ export default class SceneCo909 {
       str += char;
     }
 
-    // 0xFF0000 - rouge
-    // 0x00FF55 - green
-    // 0x023EFF - Blue
-    // 0xFFFF00 - Yellow
 
-    // 0xD802FF violet
-    // 0x00FFF5 cyan
-    // 0xFF0279 rose 
-    // 0xFF9102 orange
     /// draw screen
     experience.ledDisplay.redraw();
     console.log(str, beat);
