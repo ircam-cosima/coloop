@@ -98,7 +98,7 @@ export default class SceneWwryR {
 
     if (connectedUsers === 0) {
       experience.ledDisplay.clearPixels();
-      experience.ledDisplay.circle(beat%4, '0xFFFBCB');
+      experience.ledDisplay.circle(beat % 4, '0xFFFBCB');
       experience.ledDisplay.redraw();
     }
     //console.log(connectedUsers, beat);
@@ -109,11 +109,20 @@ export default class SceneWwryR {
     const experience = this.experience;
     experience.broadcast('barrel', null, 'motionEvent', index, data);
 
-
+    //console.log(index, data);
     if (!(index === 0)) {
-      experience.ledDisplay.clearPixels();
-      experience.ledDisplay.segment(index, playerColors[index]);
-      experience.ledDisplay.redraw();
+
+      if (index === 4) { /// chord specail case
+        if (data > 0.5) {
+          experience.ledDisplay.clearPixels();
+          experience.ledDisplay.segment(index, playerColors[index]);
+          experience.ledDisplay.redraw();
+        }
+      } else { // all other instruments
+        experience.ledDisplay.clearPixels();
+        experience.ledDisplay.segment(index, playerColors[index]);
+        experience.ledDisplay.redraw();
+      }
     } else {
       experience.ledDisplay.clearPixels();
       experience.ledDisplay.circle(0, playerColors[index]);
@@ -121,10 +130,11 @@ export default class SceneWwryR {
       experience.ledDisplay.redraw();
     }
 
-    setTimeout(() => {
-      experience.ledDisplay.screenOff();
-    }, 100);
-
+    if (!(index === 4)) {
+      setTimeout(() => {
+        experience.ledDisplay.screenOff();
+      }, 100);
+    }
 
   }
 }
