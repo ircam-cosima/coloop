@@ -128,7 +128,7 @@ export default class SceneCo909 {
         let ds = Math.round((32.0 / 16.0) * i);
         experience.ledDisplay.line(ds, "0x808080");
       }
-    } else {
+    } else { // grid for more than 4 players
       for (let i = 0; i < 32; i++) {
         experience.ledDisplay.line(i, "0x808080");
       }
@@ -183,7 +183,7 @@ export default class SceneCo909 {
       if (isPlacing) {
         char = '|  ';
         if (beat <= numBeats / 2) {
-          experience.ledDisplay.segment(i, 'Ox' + playerColors[i]);
+          experience.ledDisplay.segment(i, '0x' + playerColors[i]);
         }
       }
 
@@ -193,7 +193,6 @@ export default class SceneCo909 {
         char = String.fromCharCode(0x25C9) + '  ';
       str += char;
     }
-
 
     /// draw screen
     experience.ledDisplay.redraw();
