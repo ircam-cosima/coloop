@@ -21,64 +21,64 @@ export default {
       name: 'snare drum',
       layers: [{
         buffer: 'sounds/co-909/909-SD-low.wav',
-        gain: -10,
+        gain: 0,
       }, {
         buffer: 'sounds/co-909/909-SD-high.wav',
-        gain: -10,
+        gain: 0,
       }, ],
     }, {
       name: 'hi hat',
       layers: [{
         buffer: 'sounds/co-909/909-HH-closed.wav',
-        gain: -7,
+        gain: 0,
       }, {
         buffer: 'sounds/co-909/909-HH-open.wav',
-        gain: -7,
+        gain: 0,
       }, ],
     }, {
       name: 'mid tom',
       layers: [{
         buffer: 'sounds/co-909/909-MT-low.wav',
-        gain: -4,
+        gain: 0,
       }, {
         buffer: 'sounds/co-909/909-MT-high.wav',
-        gain: -4,
+        gain: 0,
       }, ],
     }, {
       name: 'rim shot / hand clap',
       layers: [{
         buffer: 'sounds/co-909/909-PC-rimshot.wav',
-        gain: -6,
+        gain: 0,
       }, {
         buffer: 'sounds/co-909/909-PC-clap.wav',
-        gain: -6,
+        gain: 0,
       }, ],
     }, {
       name: 'high tom',
       layers: [{
         buffer: 'sounds/co-909/909-HT-low.wav',
-        gain: -3,
+        gain: 0,
       }, {
         buffer: 'sounds/co-909/909-HT-high.wav',
-        gain: -3,
+        gain: 0,
       }, ],
     }, {
       name: 'low tom',
       layers: [{
         buffer: 'sounds/co-909/909-LT-low.wav',
-        gain: -1,
+        gain: 0,
       }, {
         buffer: 'sounds/co-909/909-LT-high.wav',
-        gain: -1,
+        gain: 0,
       }, ],
     }, {
       name: 'cymbal',
       layers: [{
         buffer: 'sounds/co-909/909-CY-ride.wav',
-        gain: -7,
+        gain: 0,
       }, {
         buffer: 'sounds/co-909/909-CY-crash.wav',
-        gain: -7,
+        gain: 0,
       }, ],
     }, ],
   },
