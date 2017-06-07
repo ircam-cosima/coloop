@@ -161,16 +161,16 @@ export default class SceneCo909 {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.addMetronome(this.onMetroBeat, this.numSteps, this.numSteps);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, this.numSteps, this.numSteps, 1, 0, true);
   }
 
   enter() {
-    const experience = this.experience;
-
     if (this.instrument) {
       this.startPlacer();
     } else {
+      const experience = this.experience;
       const instrumentConfig = this.config.instruments[soundworks.client.index];
+      
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
         this.instrument = instrument;
         this.startPlacer();
@@ -179,11 +179,17 @@ export default class SceneCo909 {
   }
 
   exit() {
-    const experience = this.experience;
-    experience.view.removeRenderer(this.renderer);
-    experience.surface.removeListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.removeMetronome(this.onMetroBeat);
     this.clear();
+    this.placer.stop();
+
+    if(this.$viewElem !== null) {
+      this.$viewElem = null;
+
+      const experience = this.experience;
+      experience.view.removeRenderer(this.renderer);
+      experience.metricScheduler.removeMetronome(this.onMetroBeat);
+      experience.surface.removeListener('touchstart', this.onTouchStart);
+    }
   }
 
   clear() {

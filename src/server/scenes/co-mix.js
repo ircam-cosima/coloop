@@ -57,7 +57,8 @@ export default class CoMix {
     const experience = this.experience;
     experience.sharedParams.update('tempo', this.config.tempo);
     experience.enableTempoChange(false);
-
+    experience.ledDisplay.screenOff();
+    
     this.metronome.start();
   }
 

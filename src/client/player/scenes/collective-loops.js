@@ -183,12 +183,12 @@ export default class SceneCollectiveLoops {
   }
 
   enter() {
-    const experience = this.experience;
-
-    if (this.notes) {
+   if (this.notes) {
       this.startPlacer();
     } else {
+      const experience = this.experience;
       const noteConfig = this.config.notes;
+      
       experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
         this.notes = notes;
         this.startPlacer();

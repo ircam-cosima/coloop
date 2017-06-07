@@ -27,8 +27,6 @@ export default class SceneCollectiveLoops {
     this.onSwitchNote = this.onSwitchNote.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
-
-
   }
 
   clientEnter(client) {
@@ -57,6 +55,8 @@ export default class SceneCollectiveLoops {
   }
 
   enter() {
+    this.experience.ledDisplay.screenOff();
+
     this.metronome.start();
   }
 
@@ -72,26 +72,23 @@ export default class SceneCollectiveLoops {
     }
   }
 
-  resetAllStepStates() {
-    for (let i = 0; i < this.stepStates.length; i++)
-      this.resetStepStates(i);
-  }
-
   setNoteState(step, note, state) {
     const states = this.stepStates[step];
     states[note] = state;
   }
 
   setTempo(tempo) {
-    setTimeout(() => this.metronome.sync(), 0);
+    this.metronome.sync();
   }
 
   clear() {
-    this.resetAllStepStates();
+    for (let i = 0; i < this.stepStates.length; i++)
+      this.resetStepStates(i);
   }
 
   onMetroBeat(measure, beat) {
-    //    console.log("BEATS", beat);
+    console.log('coucou:', measure, beat);
+
     const states = this.stepStates[beat];
 
     const isPlacing = this.isPlacing[beat];
@@ -100,27 +97,24 @@ export default class SceneCollectiveLoops {
     experience.ledDisplay.clearPixels();
 
     // BEAT COUNT FROM 0-7
-
     let cnt = 0;
     for (let i = 1; i < 32; i += 4) {
-      if (!this.isPlacing[cnt]) {
-        const playerColor = '0x' + playerColors[cnt];
 
+      if (this.isPlacing[cnt] === false) {
+        let currentColor = '0x' + playerColors[cnt];
         /// color grid
-        experience.ledDisplay.line(i, playerColor);
-
+        experience.ledDisplay.line(i, currentColor);
         if (i + 1 < 32)
-          experience.ledDisplay.line(i + 1, playerColor);
-      } /*else {
+          experience.ledDisplay.line(i + 1, currentColor);
+      } else {
         /// white grid
         experience.ledDisplay.line(i, "0x808080");
-
         if (i + 1 < 32)
           experience.ledDisplay.line(i + 1, "0x808080");
       }
-      */
       cnt++;
     }
+
 
     // BEAT SELECTOR
     experience.ledDisplay.segment(beat, "0xFFFBCB");
@@ -150,19 +144,17 @@ export default class SceneCollectiveLoops {
     }
 
     /// BLINK NEWCOMMERS
-
-
     for (let i = 0; i < numBeats; i++) {
       const isPlacing = this.isPlacing[i];
 
       if (isPlacing) {
         if (beat <= numBeats / 2) {
-          const pC = '0x' + playerColors[cnt];
+          const pC = '0x' + playerColors[i];
           experience.ledDisplay.segment(i, pC);
         }
       }
     }
-    
+ 
     experience.ledDisplay.redraw();
 
   }

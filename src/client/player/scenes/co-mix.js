@@ -186,13 +186,12 @@ export default class SceneCoMix {
   }
 
   enter() {
-    const experience = this.experience;
-
     if (this.notes) {
       this.startPlacer();
     } else {
-
+      const experience = this.experience;
       const trackConfig = this.config.tracks[this.clientIndex];
+      
       experience.audioBufferManager.loadFiles(trackConfig).then((track) => {
         this.track = track;
         this.startPlacer();
@@ -201,6 +200,9 @@ export default class SceneCoMix {
   }
 
   exit() {
+    if (this.loopPlayer)
+      this.loopPlayer.removeLoopTrack(0);
+
     this.placer.stop();
 
     if (this.$viewElem) {
@@ -211,9 +213,6 @@ export default class SceneCoMix {
       experience.surface.removeListener('touchstart', this.onTouchStart);
       experience.motionInput.removeListener('accelerationIncludingGravity', this.onMotionInput);
     }
-
-    if (this.loopPlayer)
-      this.loopPlayer.removeLoopTrack(0);
   }
 
   onTouchStart(id, normX, normY) {

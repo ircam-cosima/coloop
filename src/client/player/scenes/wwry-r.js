@@ -440,12 +440,12 @@ export default class SceneWwryR {
   }
 
   enter() {
-    const experience = this.experience;
-
     if (this.notes) {
       this.startPlacer();
     } else {
+      const experience = this.experience;
       const trackConfig = this.config.tracks[this.clientIndex];
+
       experience.audioBufferManager.loadFiles(trackConfig).then((track) => {
         this.track = track;
         this.startPlacer();
@@ -454,18 +454,17 @@ export default class SceneWwryR {
   }
 
   exit() {
-    const experience = experience;
-
     this.placer.stop();
+
+    if (this.queenPlayer)
+      this.queenPlayer.stopTrack(0);
+
 
     if (this.$viewElem) {
       this.$viewElem = null;
       this.experience.view.removeRenderer(this.renderer);
       this.stopMotion();
     }
-
-    if (this.queenPlayer)
-      this.queenPlayer.stopTrack(0);
   }
 
   onMotionEvent(data, intensity) {

@@ -41,10 +41,15 @@ export default class Metronome extends TimeEngine {
     if (this.master) {
       const metricPosition = this.metricScheduler.metricPosition;
       const floatMeasures = metricPosition / this.measureLength;
-      const measureCount = Math.floor(floatMeasures);
+      let measureCount = Math.floor(floatMeasures);
       const measurePhase = floatMeasures - measureCount;
       const metricSpeed = this.metricScheduler.tempo * this.metricScheduler.tempoUnit / 60;
-      const beatCount = Math.ceil(this.numBeats * measurePhase);
+      let beatCount = Math.ceil(this.numBeats * measurePhase);
+
+      if (beatCount === this.numBeats) {
+        measureCount++;
+        beatCount = 0;
+      }
 
       this.beatPeriod = this.beatLength / metricSpeed;
       this.measureCount = measureCount; // current measure
