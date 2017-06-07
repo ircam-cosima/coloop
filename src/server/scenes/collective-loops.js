@@ -55,6 +55,8 @@ export default class SceneCollectiveLoops {
   }
 
   enter() {
+    this.experience.ledDisplay.screenOff();
+
     this.metronome.start();
   }
 
