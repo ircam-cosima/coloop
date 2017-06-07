@@ -329,7 +329,7 @@ export default {
       buffer: 'sounds/wwry-r/choirs.mp3',
       markers: 'sounds/wwry-r/choirs-markers.json',
     }, {
-      name: 'sing it',
+      name: 'freddy',
       buffer: 'sounds/wwry-r/sing-it.mp3',
       markers: 'sounds/wwry-r/sing-it-markers.json',
     }, {
