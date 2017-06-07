@@ -155,12 +155,12 @@ export default class PlayerExperience extends Experience {
   }
 
   onButtonIncremented(data) {
-    if(tempoChangeEnabled)
+    if(this.tempoChangeEnabled)
       this.sharedParams.update('tempo', this.tempo + 1);
   }
 
   onButtonDecremented(data) {
-    if(tempoChangeEnabled)
+    if(this.tempoChangeEnabled)
       this.sharedParams.update('tempo', this.tempo - 1);
   }
 }
