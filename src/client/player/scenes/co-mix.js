@@ -54,7 +54,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
 
     if (measureStartTime > 0) {
       const layer = this.layer;
-      const color = layer.color ||  playerColors[clientIndex];
+      const color = '#' + playerColors[clientIndex];
       const x0 = this.canvasWidth / 2;
       const y0 = this.canvasHeight / 2;
       const ringRadius = this.ringRadius;
