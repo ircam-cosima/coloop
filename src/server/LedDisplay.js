@@ -125,6 +125,7 @@ export default class LedDisplay extends EventEmitter {
     if (this.serialPort) {
       if ((segmentNumber >= 0) && (segmentNumber <= 7)) {
         this.serialPort.write('D ' + hexColor + ' ' + segmentNumber + '\n');
+       // console.log('OUT','D ' + hexColor + ' ' + segmentNumber + '\n' );
       } else {
         throw new Error(`Segment number is out of scope! Segments permitted : 0-7`);
       }

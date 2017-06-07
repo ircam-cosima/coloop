@@ -100,23 +100,25 @@ export default class SceneCollectiveLoops {
     experience.ledDisplay.clearPixels();
 
     // BEAT COUNT FROM 0-7
+
     let cnt = 0;
     for (let i = 1; i < 32; i += 4) {
       if (!this.isPlacing[cnt]) {
-        const playerColor = 'Ox' + playerColors[cnt];
+        const playerColor = '0x' + playerColors[cnt];
 
         /// color grid
         experience.ledDisplay.line(i, playerColor);
 
         if (i + 1 < 32)
           experience.ledDisplay.line(i + 1, playerColor);
-      } else {
+      } /*else {
         /// white grid
         experience.ledDisplay.line(i, "0x808080");
 
         if (i + 1 < 32)
           experience.ledDisplay.line(i + 1, "0x808080");
       }
+      */
       cnt++;
     }
 
@@ -152,14 +154,15 @@ export default class SceneCollectiveLoops {
 
     for (let i = 0; i < numBeats; i++) {
       const isPlacing = this.isPlacing[i];
-      
+
       if (isPlacing) {
         if (beat <= numBeats / 2) {
-          experience.ledDisplay.segment(i, 'Ox' + playerColors[i]);
+          const pC = '0x' + playerColors[cnt];
+          experience.ledDisplay.segment(i, pC);
         }
       }
     }
-
+    
     experience.ledDisplay.redraw();
 
   }
