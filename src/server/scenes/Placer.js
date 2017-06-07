@@ -9,7 +9,9 @@ export default class Placer {
   constructor(experience) {
     this.experience = experience;
 
+    this.blinkStates = [];
     this.callbacks = [];
+    this.onPlacerReadys = [];
   }
 
   start(client, callback = function() {}) {
@@ -17,9 +19,9 @@ export default class Placer {
     const clientIndex = client.index;
 
     this.callbacks[clientIndex] = callback;
-    this.blinkStates = [];
+    this.onPlacerReadys[clientIndex] = () => this.onPlacerReady(client);
 
-    experience.receive(client, 'placerReady', () => this.onPlacerReady(client));
+    experience.receive(client, 'placerReady', this.onPlacerReadys[clientIndex]);
   }
 
   stop(client) {
@@ -29,7 +31,7 @@ export default class Placer {
 
     if (callback) {
       delete this.callbacks[clientIndex];
-      experience.stopReceiving(client, 'placerReady', this.onPlacerReady);
+      experience.stopReceiving(client, 'placerReady', this.onPlacerReadys[clientIndex]);
     }
   }
 

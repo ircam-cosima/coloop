@@ -46,9 +46,9 @@ export default class LedDisplay extends EventEmitter {
           this.emit('buttonTurned', data);
 
           if (data.indexOf('+1') > -1)
-            this.emit('buttonIncrimented');
+            this.emit('buttonIncremented');
           else if (data.indexOf('-1') > -1)
-            this.emit('buttonDecrimented');
+            this.emit('buttonDecremented');
         } else if ((data.indexOf('touch') > -1) || (data.indexOf('released') > -1)) {
           this.emit('buttonClick', data);
 

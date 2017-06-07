@@ -79,11 +79,6 @@ export default class SceneCo909 {
     }
   }
 
-  resetAllInstrumentSequences() {
-    for (let i = 0; i < this.instrumentSequences.length; i++)
-      this.resetInstrumentSequence(i);
-  }
-
   setNoteState(instrument, beat, state) {
     const sequence = this.instrumentSequences[instrument];
     sequence[beat] = state;
@@ -91,11 +86,12 @@ export default class SceneCo909 {
   }
 
   setTempo(tempo) {
-    setTimeout(() => this.metronome.sync(), 0);
+    this.metronome.sync();
   }
 
   clear() {
-    this.resetAllInstrumentSequences();
+    for (let i = 0; i < this.instrumentSequences.length; i++)
+      this.resetInstrumentSequence(i);
   }
 
   onMetroBeat(measure, beat) {

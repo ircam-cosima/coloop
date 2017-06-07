@@ -27,8 +27,6 @@ export default class SceneCollectiveLoops {
     this.onSwitchNote = this.onSwitchNote.bind(this);
 
     this.metronome = new Metronome(experience.scheduler, experience.metricScheduler, numSteps, numSteps, this.onMetroBeat);
-
-
   }
 
   clientEnter(client) {
@@ -72,26 +70,23 @@ export default class SceneCollectiveLoops {
     }
   }
 
-  resetAllStepStates() {
-    for (let i = 0; i < this.stepStates.length; i++)
-      this.resetStepStates(i);
-  }
-
   setNoteState(step, note, state) {
     const states = this.stepStates[step];
     states[note] = state;
   }
 
   setTempo(tempo) {
-    setTimeout(() => this.metronome.sync(), 0);
+    this.metronome.sync();
   }
 
   clear() {
-    this.resetAllStepStates();
+    for (let i = 0; i < this.stepStates.length; i++)
+      this.resetStepStates(i);
   }
 
   onMetroBeat(measure, beat) {
-    //    console.log("BEATS", beat);
+    console.log('coucou:', measure, beat);
+
     const states = this.stepStates[beat];
 
     const isPlacing = this.isPlacing[beat];

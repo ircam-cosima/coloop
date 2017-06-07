@@ -31,11 +31,14 @@ export default class PlayerExperience extends Experience {
     this.scheduler = null;
     this.scenes = {};
     this.currentScene = null;
+    this.tempo = 120;
 
     this.onSceneChange = this.onSceneChange.bind(this);
     this.onTempoChange = this.onTempoChange.bind(this);
     this.onClear = this.onClear.bind(this);
     this.onTemperature = this.onTemperature.bind(this);
+    this.onButtonIncremented = this.onButtonIncremented.bind(this);
+    this.onButtonDecremented = this.onButtonDecremented.bind(this);
   }
 
   start() {
@@ -46,6 +49,8 @@ export default class PlayerExperience extends Experience {
       // null means automatic port search, otherwise put something like : /dev/tty.wchusbserial1420
 
       this.ledDisplay.addListener('temperature', this.onTemperature);
+      this.ledDisplay.addListener('buttonIncremented', this.onButtonIncremented);
+      this.ledDisplay.addListener('buttonDecremented', this.onButtonDecremented);
 
       // we need to wait that arduino start his processes and starts to listen
       // this is not beautiful way to do it. Arduino has to send one byte when is ready... todo
@@ -68,10 +73,10 @@ export default class PlayerExperience extends Experience {
   }
 
   exitCurrentScene() {
-    this.currentScene.exit();
-
     for (let client of this.clients)
       this.currentScene.clientExit(client);
+
+    this.currentScene.exit();
   }
 
   enter(client) {
@@ -121,7 +126,7 @@ export default class PlayerExperience extends Experience {
     // get temperature on each change of scenario
     try {
       this.ledDisplay.requestTemperature();
-    } catch(e) {
+    } catch (e) {
       console.log("will get temperature later");
     }
     this.exitCurrentScene();
@@ -133,9 +138,11 @@ export default class PlayerExperience extends Experience {
     if (this.currentScene.setTempo)
       this.currentScene.setTempo(tempo);
 
+    this.tempo = tempo;
+
     const syncTime = this.metricScheduler.syncTime;
     const metricPosition = this.metricScheduler.getMetricPositionAtSyncTime(syncTime);
-    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1 / 4, 'tempoChange');
+    this.metricScheduler.sync(syncTime, metricPosition, tempo, 1/4, 'tempoChange');
   }
 
   onClear() {
@@ -144,7 +151,16 @@ export default class PlayerExperience extends Experience {
   }
 
   onTemperature(data) {
-    console.log('temperature:', data);
     this.sharedParams.update('temperature', data);
+  }
+
+  onButtonIncremented(data) {
+    if(tempoChangeEnabled)
+      this.sharedParams.update('tempo', this.tempo + 1);
+  }
+
+  onButtonDecremented(data) {
+    if(tempoChangeEnabled)
+      this.sharedParams.update('tempo', this.tempo - 1);
   }
 }
