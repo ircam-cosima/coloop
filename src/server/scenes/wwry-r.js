@@ -48,13 +48,17 @@ export default class SceneWwryR {
   }
 
   enter() {
-    this.experience.sharedParams.update('tempo', this.config.tempo);
+    const experience = this.experience;
+    experience.sharedParams.update('tempo', this.config.tempo);
+    experience.enableTempoChange(false);
     this.metronome.start();
   }
 
-  exit() {    
+  exit() {
+    const experience = this.experience;
     this.metronome.stop();
-    this.experience.sharedParams.update('tempo', this.config.tempo);
+    experience.sharedParams.update('tempo', this.config.tempo);
+    experience.enableTempoChange(true);
   }
 
   onMetroBeat(measure, beat) {

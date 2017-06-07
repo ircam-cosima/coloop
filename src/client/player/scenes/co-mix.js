@@ -54,6 +54,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
 
     if (measureStartTime > 0) {
       const layer = this.layer;
+      const color = '#' + playerColors[clientIndex];
       const x0 = this.canvasWidth / 2;
       const y0 = this.canvasHeight / 2;
       const ringRadius = this.ringRadius;
@@ -79,7 +80,6 @@ class Renderer extends soundworks.Canvas2dRenderer {
         const intensityIndex = Math.floor(loopPhase * layer.intensity.length + 0.5);
         const intensityInDb = layer.intensity[intensityIndex] + 36;
         const intensity = clip(Math.exp(0.3 * intensityInDb));
-        const color = layer.color ||  playerColors[clientIndex];
 
         ctx.strokeStyle = color;
 
