@@ -26,7 +26,7 @@ export default class Metronome extends TimeEngine {
 
     beatCount++;
 
-    if(beatCount >= this.numBeats) {
+    if (beatCount >= this.numBeats) {
       measureCount++;
       beatCount = 0;
     }
@@ -37,23 +37,34 @@ export default class Metronome extends TimeEngine {
     return time + this.beatPeriod;
   }
 
+  sync() {
+    if (this.master) {
+      const metricPosition = this.metricScheduler.metricPosition;
+      const floatMeasures = metricPosition / this.measureLength;
+      const measureCount = Math.floor(floatMeasures);
+      const measurePhase = floatMeasures - measureCount;
+      const metricSpeed = this.metricScheduler.tempo * this.metricScheduler.tempoUnit / 60;
+      const beatCount = Math.ceil(this.numBeats * measurePhase);
+
+      this.beatPeriod = this.beatLength / metricSpeed;
+      this.measureCount = measureCount; // current measure
+      this.beatCount = beatCount; // next beat
+
+      const startPosition = measureCount * this.measureLength + beatCount * this.beatLength;
+      const startTime = this.metricScheduler.getSyncTimeAtMetricPosition(startPosition);
+      this.scheduler.resetEngineTime(this, startTime);
+    }
+  }
+
   start() {
-    const metricPosition = this.metricScheduler.metricPosition;
-    const floatMeasures = metricPosition / this.measureLength;
-    const measureCount = Math.ceil(floatMeasures);
-    const metricSpeed = this.metricScheduler.tempo * this.metricScheduler.tempoUnit / 60;
-
-    this.beatPeriod = this.beatLength / metricSpeed;
-    this.measureCount = measureCount;
-    this.beatCount = 0;
-
-    const startPosition = measureCount * this.measureLength;
-    const startTime = this.metricScheduler.getSyncTimeAtMetricPosition(startPosition);
-
-    this.scheduler.add(this, startTime);
+    if (!this.master) {
+      this.scheduler.add(this, Infinity);
+      this.sync();
+    }
   }
 
   stop() {
-    this.scheduler.remove(this);
+    if (this.master)
+      this.scheduler.remove(this);
   }
 }
