@@ -205,9 +205,7 @@ export default class BarrelExperience extends soundworks.Experience {
   }
 
   onClear(index) {
-    const clearScene = this.currentScene.clear;
-
-    if(clearScene)
-      clearScene(index);
+    if(this.currentScene.clear)
+      this.currentScene.clear(index);
   }
 }
