@@ -87,7 +87,7 @@ export default class SceneCo909 {
   }
 
   setTempo(tempo) {
-    this.metronome.sync();
+    setTimeout(() => this.metronome.sync(), 0);
   }
 
   clear() {

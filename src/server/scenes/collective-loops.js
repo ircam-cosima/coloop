@@ -78,7 +78,7 @@ export default class SceneCollectiveLoops {
   }
 
   setTempo(tempo) {
-    this.metronome.sync();
+    setTimeout(() => this.metronome.sync(), 0);
   }
 
   clear() {
