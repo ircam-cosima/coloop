@@ -31,6 +31,8 @@ export default class PlayerExperience extends Experience {
     this.scheduler = null;
     this.scenes = {};
     this.currentScene = null;
+
+    this.tempoChangeEnabled = true;
     this.tempo = 120;
 
     this.onSceneChange = this.onSceneChange.bind(this);
