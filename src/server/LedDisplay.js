@@ -156,6 +156,10 @@ export default class LedDisplay extends EventEmitter {
     }
   }
 
+  screenOff() {
+    this.clearPixels();
+    this.redraw();
+  }
 
   clearPixels() {
     if (this.serialPort)

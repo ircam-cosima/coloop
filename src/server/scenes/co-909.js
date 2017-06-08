@@ -60,6 +60,7 @@ export default class SceneCo909 {
   enter() {
     const experience = this.experience;
     experience.ledDisplay.addListener('buttonTurned', this.onButtonTurned);
+    experience.ledDisplay.screenOff();
 
     this.metronome.start();
   }
