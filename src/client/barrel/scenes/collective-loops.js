@@ -34,7 +34,7 @@ export default class SceneCollectiveLoops {
   enterScene() {
     const experience = this.experience;
     const numSteps = this.stepStates.length;
-    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps, 1, 0, true);
     experience.receive('switchNote', this.onSwitchNote);
   }
 

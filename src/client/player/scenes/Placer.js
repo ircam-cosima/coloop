@@ -64,7 +64,7 @@ export default class Placer {
 
     experience.view.addRenderer(this.renderer);
     experience.surface.addListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.addMetronome(this.onMetroBeat, 2, 2);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, 2, 2, 1, 0, true);
   }
 
   stop() {

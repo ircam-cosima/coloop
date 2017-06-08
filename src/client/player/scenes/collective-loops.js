@@ -179,7 +179,7 @@ export default class SceneCollectiveLoops {
     });
 
     experience.surface.addListener('touchstart', this.onTouchStart);
-    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1, 1, this.clientIndex / numSteps);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, 1, 1, 1, this.clientIndex / numSteps, true);
   }
 
   enter() {

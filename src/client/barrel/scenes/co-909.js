@@ -34,7 +34,7 @@ export default class SceneCo909 {
   enterScene() {
     const experience = this.experience;
     const numSteps = this.config.numSteps;
-    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps);
+    experience.metricScheduler.addMetronome(this.onMetroBeat, numSteps, numSteps, 1, 0, true);
     experience.receive('switchNote', this.onSwitchNote);
   }
 
