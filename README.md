@@ -1,6 +1,8 @@
 # CoLoop
 
-_CoLoop_ is a participative/collaborative ghetto blaster designed by NoDesign and IRCAM in the framework of the CoSiMa project.
+_CoLoop_ is a participative/collaborative ghetto blaster designed by NoDesign.net and IRCAM in the framework of the CoSiMa project.
+
+![Image of Coloop](https://raw.githubusercontent.com/ircam-cosima/coloop/master/photo/coloop.jpg)
 
 Use the follwing commands to clone the repository and run the server:
 ```sh
