@@ -9,6 +9,9 @@ Use the follwing commands to clone the repository and run the server:
 $ git clone https://github.com/ircam-cosima/coloop.git
 $ cd coloop
 $ npm install
+$ cd node_modules/soundworks/
+$ npm run transpile
+$ cd ../..
 $ npm run watch
 ```
 
