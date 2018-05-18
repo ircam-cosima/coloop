@@ -33,7 +33,7 @@ export default class BarrelExperience extends soundworks.Experience {
   constructor(assetsDomain) {
     super();
 
-    this.platform = this.require('platform', { features: ['web-audio'], showDialog: false });
+    this.platform = this.require('platform', { features: ['web-audio'], showDialog: true });
     this.sharedParams = this.require('shared-params');
     this.audioBufferManager = this.require('audio-buffer-manager', { assetsDomain: assetsDomain });
     this.metricScheduler = this.require('metric-scheduler');
@@ -84,10 +84,10 @@ export default class BarrelExperience extends soundworks.Experience {
       lowpass.frequency.value = 250; // set default woofer cutoff frequency to 250 Hz
       inverter.gain.value = -1;
 
-      // connect 
+      // connect
       channel.connect(lowpass);
 
-      // connect high pass to single output channel, 
+      // connect high pass to single output channel,
       // highpass = channel - lowpass(channel) = channel + inverter(lowpass(channel))
       channel.connect(channelMerger, 0, i);
       lowpass.connect(inverter);
@@ -178,14 +178,14 @@ export default class BarrelExperience extends soundworks.Experience {
     this.currentScene.enter();
 
     for (let client of this.clients)
-      this.currentScene.clientEnter(client);    
+      this.currentScene.clientEnter(client);
   }
 
   exitCurrentScene() {
     this.currentScene.exit();
 
     for (let client of this.clients)
-      this.currentScene.clientExit(client);    
+      this.currentScene.clientExit(client);
   }
 
   onSceneChange(value) {
