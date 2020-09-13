@@ -170,7 +170,7 @@ export default class SceneCo909 {
     } else {
       const experience = this.experience;
       const instrumentConfig = this.config.instruments[soundworks.client.index];
-      
+
       experience.audioBufferManager.loadFiles(instrumentConfig).then((instrument) => {
         this.instrument = instrument;
         this.startPlacer();
@@ -219,21 +219,21 @@ export default class SceneCo909 {
   }
 
   onMetroBeat(measure, beat) {
-    const state = this.sequence[beat];
+    // const state = this.sequence[beat];
 
-    if (state > 0) {
-      const time = audioScheduler.currentTime;
-      const layer = this.instrument.layers[state - 1];
+    // if (state > 0) {
+    //   const time = audioScheduler.currentTime;
+    //   const layer = this.instrument.layers[state - 1];
 
-      const gain = audioContext.createGain(); 
-      gain.connect(this.audioOutput);
-      gain.gain.value = decibelToLinear(layer.gain);
+    //   const gain = audioContext.createGain();
+    //   gain.connect(this.audioOutput);
+    //   gain.gain.value = decibelToLinear(layer.gain);
 
-      const src = audioContext.createBufferSource();
-      src.connect(gain);
-      src.buffer = layer.buffer;
-      src.start(time);
-    }
+    //   const src = audioContext.createBufferSource();
+    //   src.connect(gain);
+    //   src.buffer = layer.buffer;
+    //   src.start(time);
+    // }
 
     this.renderer.setHighlight(beat);
   }

@@ -48,7 +48,7 @@ class Renderer extends soundworks.Canvas2dRenderer {
     this.blinkTime = undefined;
   }
 
-  update(dt) { 
+  update(dt) {
     if(this.blinkTime !== undefined)
       this.blinkTime += dt;
     else
@@ -119,7 +119,7 @@ const template = `
   <div class="foreground">
     <div class="section-top flex-middle"></div>
     <div class="section-center flex-middle">
-    
+
     </div>
     <div class="section-bottom flex-middle"></div>
   </div>
@@ -188,7 +188,7 @@ export default class SceneCollectiveLoops {
     } else {
       const experience = this.experience;
       const noteConfig = this.config.notes;
-      
+
       experience.audioBufferManager.loadFiles(noteConfig).then((notes) => {
         this.notes = notes;
         this.startPlacer();
@@ -243,26 +243,26 @@ export default class SceneCollectiveLoops {
   }
 
   onMetroBeat(measure, beat) {
-    const time = audioScheduler.currentTime;
-    const states = this.states;
-    const notes = this.notes;
+    // const time = audioScheduler.currentTime;
+    // const states = this.states;
+    // const notes = this.notes;
 
-    this.renderer.triggerBlink(this.beatDuration);
+    // this.renderer.triggerBlink(this.beatDuration);
 
-    for (let i = 0; i < this.states.length; i++) {
-      const state = states[i];
-      const note = notes[i];
+    // for (let i = 0; i < this.states.length; i++) {
+    //   const state = states[i];
+    //   const note = notes[i];
 
-      if (state > 0) {
-        const gain = audioContext.createGain();
-        gain.connect(this.audioOutput);
-        gain.gain.value = decibelToLinear(note.gain);
+    //   if (state > 0) {
+    //     const gain = audioContext.createGain();
+    //     gain.connect(this.audioOutput);
+    //     gain.gain.value = decibelToLinear(note.gain);
 
-        const src = audioContext.createBufferSource();
-        src.connect(gain);
-        src.buffer = note.buffer;
-        src.start(time);
-      }
-    }
+    //     const src = audioContext.createBufferSource();
+    //     src.connect(gain);
+    //     src.buffer = note.buffer;
+    //     src.start(time);
+    //   }
+    // }
   }
 }

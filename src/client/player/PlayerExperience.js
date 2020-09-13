@@ -3,16 +3,16 @@ import sceneConfig from '../../shared/scenes-config';
 import SceneOff from './scenes/off';
 import SceneCo909 from './scenes/co-909';
 import SceneCollectiveLoops from './scenes/collective-loops';
-import SceneCoMix from './scenes/co-mix';
-import SceneWwryR from './scenes/wwry-r';
+// import SceneCoMix from './scenes/co-mix';
+// import SceneWwryR from './scenes/wwry-r';
 const audioContext = soundworks.audioContext;
 
 const sceneCtors = {
   'off': SceneOff,
   'co-909': SceneCo909,
   'collective-loops': SceneCollectiveLoops,
-  'co-mix': SceneCoMix,
-  'wwry-r': SceneWwryR,
+  // 'co-mix': SceneCoMix,
+  // 'wwry-r': SceneWwryR,
 };
 
 const template = `
@@ -31,7 +31,7 @@ export default class PlayerExperience extends soundworks.Experience {
     super();
 
     this.platform = this.require('platform', { features: ['web-audio'] });
-    this.motionInput = this.require('motion-input', { descriptors: ['accelerationIncludingGravity', 'rotationRate'] });
+    // this.motionInput = this.require('motion-input', { descriptors: ['accelerationIncludingGravity', 'rotationRate'] });
 
     this.scenes = {};
     this.currentScene = null;
